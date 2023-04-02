@@ -9,7 +9,7 @@ public class SeleccionarArchivo {
 		String rutaArchivo = "";
 		// Leer CSV
 		// Crear un nuevo objeto FileDialog
-		FileDialog fileChooser = new FileDialog((Frame) null, "Seleccionar archivo CSV", FileDialog.LOAD);
+		FileDialog fileChooser = new FileDialog((Frame) null, "Seleccionar archivo", FileDialog.LOAD);
 
 		// Mostrar el diálogo para que el usuario seleccione un archivo
 		fileChooser.setVisible(true);
