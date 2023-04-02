@@ -26,7 +26,6 @@ public class MatrizImagen {
 		Imgproc.cvtColor(image, imageGray, Imgproc.COLOR_BGR2GRAY);
 
 		// Seleccionar la carpeta destino para guardar la imagen transformada
-		// Crear un nuevo objeto FileDialog
 		CarpetaDestino carpetaDestino = new CarpetaDestino();
 
 		String rutaCarpetaDestino = carpetaDestino.selectCarpet();
