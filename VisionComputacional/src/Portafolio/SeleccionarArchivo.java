@@ -6,14 +6,22 @@ import java.awt.Frame;
 public class SeleccionarArchivo {
 
 	public String selectFile() {
-		// Seleccionar la carpeta destino para guardar la imagen transformada
-		String rutaCarpetaDestino;
+		String rutaArchivo = "";
+		// Leer CSV
 		// Crear un nuevo objeto FileDialog
-		FileDialog carpetaDestino = new FileDialog((Frame) null, "Seleccionar carpeta destino", FileDialog.LOAD);
-		carpetaDestino.setMode(FileDialog.SAVE);
-		carpetaDestino.setVisible(true);
-		rutaCarpetaDestino = carpetaDestino.getDirectory();
-		carpetaDestino.dispose();
-		return rutaCarpetaDestino;
+		FileDialog fileChooser = new FileDialog((Frame) null, "Seleccionar archivo CSV", FileDialog.LOAD);
+
+		// Mostrar el diálogo para que el usuario seleccione un archivo
+		fileChooser.setVisible(true);
+
+		// Verificar si el usuario seleccionó un archivo
+		if (fileChooser.getFile() != null) {
+
+			// Obtener el archivo seleccionado
+			rutaArchivo = fileChooser.getDirectory() + fileChooser.getFile();
+
+		}
+		fileChooser.dispose();
+		return rutaArchivo;
 	}
 }
