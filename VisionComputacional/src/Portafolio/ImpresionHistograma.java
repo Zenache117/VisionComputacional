@@ -1,13 +1,9 @@
 package Portafolio;
 
-import java.awt.FileDialog;
-import java.awt.Frame;
 import java.util.Arrays;
-import javax.swing.JFileChooser;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
-import org.opencv.core.MatOfFloat;
 import org.opencv.core.MatOfInt;
 import org.opencv.core.Scalar;
 import org.opencv.imgcodecs.Imgcodecs;
