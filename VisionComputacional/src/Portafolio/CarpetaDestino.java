@@ -5,7 +5,7 @@ import java.awt.Frame;
 
 public class CarpetaDestino {
 
-	public String selectFile() {
+	public String selectCarpet() {
 		String rutaImagen = "";
 		// Leer CSV
 		// Crear un nuevo objeto FileDialog

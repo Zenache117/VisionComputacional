@@ -5,7 +5,7 @@ import java.awt.Frame;
 
 public class SeleccionarArchivo {
 
-	public String selectCarpet() {
+	public String selectFile() {
 		// Seleccionar la carpeta destino para guardar la imagen transformada
 		String rutaCarpetaDestino;
 		// Crear un nuevo objeto FileDialog
