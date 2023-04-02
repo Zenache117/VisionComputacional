@@ -76,7 +76,7 @@ public class ValleGlobal {
 
 		System.out.println(maximo);
 
-		// Encontrar el valor m�ximo del histograma
+		// Encontrar el valor maximo del histograma
 		int maxVal = Arrays.stream(histogram).max().getAsInt();
 
 	}
