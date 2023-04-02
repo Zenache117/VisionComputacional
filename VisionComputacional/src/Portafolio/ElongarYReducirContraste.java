@@ -1,6 +1,5 @@
 package Portafolio;
 
-import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
