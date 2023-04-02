@@ -16,6 +16,7 @@ public class Vecindarios {
 
 	public static void main(String[] args) {
 
+		// Seleccionar la imagen a transformar
 		SeleccionarArchivo archivoSeleccionado = new SeleccionarArchivo();
 
 		String rutaImagen = archivoSeleccionado.selectFile();
@@ -34,6 +35,8 @@ public class Vecindarios {
 		int rango = Integer
 				.parseInt(JOptionPane.showInputDialog("Cual es el valor de rango entre prixeles para ser vecinos?"));
 
+		// Contador de tiempo de ejecución del programa
+		Long startTime = System.currentTimeMillis();
 		// Pasar matriz a Lista
 		// Obt�n las dimensiones de la matriz
 		int filas = imageGray.rows();
@@ -127,74 +130,6 @@ public class Vecindarios {
 						if (yaCandidato == false && (difValor <= rango)) {
 							Posicion nuevoPotencial = new Posicion();
 							nuevoPotencial.setI(posActual.getI() - 1);
-							nuevoPotencial.setJ(posActual.getJ() - 1);
-							vecinosPotenciales.add(nuevoPotencial);
-						}
-
-					}
-				}
-
-				// PIXEL LATERAL IZQUIERDO DEL PIXEL ACTUAL
-
-				// revisar que el pixel a potencial como vecino exista dentro de los limites de
-				// la imagen
-				if (posActual.getJ() - 1 >= 0) {
-					// revisar que el pixel a revisar como vecino potencial no tenga ya un
-					// vecindario asignado
-					if (imagenGris.get(posActual.getI()).get(posActual.getJ() - 1).getVecindario() == -1) {
-						// revisar que el pixel no este ya en la lista de pixeles candidatos del
-						// vecindario
-						boolean yaCandidato = false;
-						for (Posicion revisar : vecinosPotenciales) {
-							if (imagenGris.get(posActual.getI()).get(posActual.getJ() - 1).getI() == revisar.getI()
-									&& imagenGris.get(posActual.getI()).get(posActual.getJ() - 1).getJ() == revisar
-											.getJ()) {
-								yaCandidato = true;
-							}
-						}
-						// revisar si la diferencia de valores esta dentro del rango para ser
-						// considerado vecino
-						int difValor = Math.abs(imagenGris.get(pxlVecCntrl.getI()).get(pxlVecCntrl.getJ()).getValor()
-								- imagenGris.get(posActual.getI()).get(posActual.getJ() - 1).getValor());
-						// Si el pixel cumple con todo y no esta registrado ya, se va para la lista de
-						// pixeles candidatos a vecinos
-						if (yaCandidato == false && (difValor <= rango)) {
-							Posicion nuevoPotencial = new Posicion();
-							nuevoPotencial.setI(posActual.getI());
-							nuevoPotencial.setJ(posActual.getJ() - 1);
-							vecinosPotenciales.add(nuevoPotencial);
-						}
-
-					}
-				}
-
-				// PIXEL INFERIOR IZQUIERDO DEL PIXEL ACTUAL
-
-				// revisar que el pixel a potencial como vecino exista dentro de los limites de
-				// la imagen
-				if (posActual.getI() + 1 < filas && posActual.getJ() - 1 >= 0) {
-					// revisar que el pixel a revisar como vecino potencial no tenga ya un
-					// vecindario asignado
-					if (imagenGris.get(posActual.getI() + 1).get(posActual.getJ() - 1).getVecindario() == -1) {
-						// revisar que el pixel no este ya en la lista de pixeles candidatos del
-						// vecindario
-						boolean yaCandidato = false;
-						for (Posicion revisar : vecinosPotenciales) {
-							if (imagenGris.get(posActual.getI() + 1).get(posActual.getJ() - 1).getI() == revisar.getI()
-									&& imagenGris.get(posActual.getI() + 1).get(posActual.getJ() - 1).getJ() == revisar
-											.getJ()) {
-								yaCandidato = true;
-							}
-						}
-						// revisar si la diferencia de valores esta dentro del rango para ser
-						// considerado vecino
-						int difValor = Math.abs(imagenGris.get(pxlVecCntrl.getI()).get(pxlVecCntrl.getJ()).getValor()
-								- imagenGris.get(posActual.getI() + 1).get(posActual.getJ() - 1).getValor());
-						// Si el pixel cumple con todo y no esta registrado ya, se va para la lista de
-						// pixeles candidatos a vecinos
-						if (yaCandidato == false && (difValor <= rango)) {
-							Posicion nuevoPotencial = new Posicion();
-							nuevoPotencial.setI(posActual.getI() + 1);
 							nuevoPotencial.setJ(posActual.getJ() - 1);
 							vecinosPotenciales.add(nuevoPotencial);
 						}
@@ -477,6 +412,11 @@ public class Vecindarios {
 
 		}
 
+		// Mostrar tiempo de ejecución
+		long endTime = System.currentTimeMillis();
+		double tiempoDeEjecucion = (endTime - startTime) / 1000.0;
+		System.out.println("Tiempo de ejecución: " + tiempoDeEjecucion + " segundos");
+		// Mostrar cantidad de vecindarios
 		System.out.println("Vecindarios: " + vecindarios.size());
 
 		// Seleccionar la carpeta destino para guardar la imagen transformada
@@ -526,6 +466,7 @@ public class Vecindarios {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+
 	}
 
 }
