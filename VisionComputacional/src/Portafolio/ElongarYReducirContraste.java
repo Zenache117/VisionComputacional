@@ -1,15 +1,16 @@
 package Portafolio;
 
+import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
-public class Aumento_Disminucion {
-
+public class ElongarYReducirContraste {
 	public static void main(String[] args) {
 
+		// Seleccionar la imagen a transformar
 		SeleccionarArchivo archivoSeleccionado = new SeleccionarArchivo();
 
 		String rutaImagen = archivoSeleccionado.selectFile();
@@ -25,34 +26,44 @@ public class Aumento_Disminucion {
 		Imgproc.cvtColor(image, imageGray, Imgproc.COLOR_BGR2GRAY);
 
 		// Crear matrices de imagenes en funci�n a las dimenciones originales
-		Mat imagenDisminucionBrillo = new Mat(imageGray.rows(), imageGray.cols(), imageGray.type());
-		Mat imagenAumentoBrillo = new Mat(imageGray.rows(), imageGray.cols(), imageGray.type());
+		Mat imagenDisminCont = new Mat(imageGray.rows(), imageGray.cols(), imageGray.type());
+		Mat imagenAumentoCont = new Mat(imageGray.rows(), imageGray.cols(), imageGray.type());
 
-		// Pedir valor a disminu�r y aumentar
-		int valorDisminucionBrillo = -1;
-		int valorAumentoBrillo = -1;
+		// Pedir factor de aumento y disminuci�n
+		float factorAumento = -1;
+		float factorDisminucion = -1;
 
-		while (valorDisminucionBrillo > 255 || valorDisminucionBrillo < 0) {
-			valorDisminucionBrillo = Integer
-					.parseInt(JOptionPane.showInputDialog("Dame el valor a disminuir de brillo"));
-			if (valorDisminucionBrillo > 255 || valorDisminucionBrillo < 0) {
+		while (factorDisminucion > 1 || factorDisminucion < 0) {
+			factorDisminucion = Float.parseFloat(JOptionPane.showInputDialog("Dame el factor a disminuir"));
+			if (factorDisminucion > 1 || factorDisminucion < 0) {
+				JOptionPane.showMessageDialog(null, "El valor debe estar entre 0 y 1");
+			}
+		}
+
+		if (factorDisminucion == 0) {
+			JOptionPane.showMessageDialog(null,
+					"El factor de disminuci�n tiene un valor nulo, la imagen resultante no cambiara");
+		}
+
+		while (factorAumento > 2 || factorAumento < 1) {
+			factorAumento = Float.parseFloat(JOptionPane.showInputDialog("Dame el factor de aumento"));
+			if (factorAumento > 2 || factorAumento < 1) {
+				JOptionPane.showMessageDialog(null, "El valor debe estar entre 1 y 2");
+			}
+		}
+
+		// Pedir constante a aumentar
+		int ConstAumentoBrillo = -1;
+
+		while (ConstAumentoBrillo > 255 || ConstAumentoBrillo < 0) {
+			ConstAumentoBrillo = Integer.parseInt(JOptionPane.showInputDialog("Dame la constante de aumento"));
+			if (ConstAumentoBrillo > 255 || ConstAumentoBrillo < 0) {
 				JOptionPane.showMessageDialog(null, "El valor debe estar entre 0 y 255");
 			}
 		}
 
-		if (valorDisminucionBrillo == 0) {
-			JOptionPane.showMessageDialog(null, "No disminuira el brillo por ser un valor nulo, quedar� igual");
-		}
-
-		while (valorAumentoBrillo > 255 || valorAumentoBrillo < 0) {
-			valorAumentoBrillo = Integer.parseInt(JOptionPane.showInputDialog("Dame el valor a aumentar de brillo"));
-			if (valorAumentoBrillo > 255 || valorAumentoBrillo < 0) {
-				JOptionPane.showMessageDialog(null, "El valor debe estar entre 0 y 255");
-			}
-		}
-
-		if (valorAumentoBrillo == 0) {
-			JOptionPane.showMessageDialog(null, "No aumentara el brillo por ser un valor nulo, quedar� igual");
+		if (ConstAumentoBrillo == 0) {
+			JOptionPane.showMessageDialog(null, "La constante de aumento tiene un valor nulo");
 		}
 
 		// Definir variables para resguardar el valor maximo y minimo alcanzado por los
@@ -66,15 +77,15 @@ public class Aumento_Disminucion {
 				double[] pixelOriginal = imageGray.get(i, j);
 
 				// Disminuci�n de brillo
-				double[] pixelDisminucionBrillo = new double[] { pixelOriginal[0] - valorDisminucionBrillo };
-				imagenDisminucionBrillo.put(i, j, pixelDisminucionBrillo);
+				double[] pixelDisminucionBrillo = new double[] { pixelOriginal[0] * factorDisminucion };
+				imagenDisminCont.put(i, j, pixelDisminucionBrillo);
 
 				// Actualiza minValue si es necesario
 				minValue = Math.min(minValue, pixelDisminucionBrillo[0]);
 
 				// Aumento de brillo
-				double[] pixelAumentoBrillo = new double[] { pixelOriginal[0] + valorAumentoBrillo };
-				imagenAumentoBrillo.put(i, j, pixelAumentoBrillo);
+				double[] pixelAumentoBrillo = new double[] { pixelOriginal[0] * factorAumento + ConstAumentoBrillo };
+				imagenAumentoCont.put(i, j, pixelAumentoBrillo);
 
 				// Actualiza maxValue si es necesario
 				maxValue = Math.max(maxValue, pixelAumentoBrillo[0]);
@@ -90,11 +101,11 @@ public class Aumento_Disminucion {
 					"�Quieres reajustar la imagen que aumentara el brillo?", "Reajustar",
 					JOptionPane.YES_NO_CANCEL_OPTION);
 			if (respuestaAumentar == JOptionPane.YES_OPTION) {
-				for (int i = 0; i < imagenAumentoBrillo.rows(); i++) {
-					for (int j = 0; j < imagenAumentoBrillo.cols(); j++) {
-						double[] pixelAumentoBrillo = imagenAumentoBrillo.get(i, j);
+				for (int i = 0; i < imagenAumentoCont.rows(); i++) {
+					for (int j = 0; j < imagenAumentoCont.cols(); j++) {
+						double[] pixelAumentoBrillo = imagenAumentoCont.get(i, j);
 						pixelAumentoBrillo[0] = (pixelAumentoBrillo[0] / maxValue) * 255;
-						imagenAumentoBrillo.put(i, j, pixelAumentoBrillo);
+						imagenAumentoCont.put(i, j, pixelAumentoBrillo);
 					}
 				}
 			} else if (respuestaAumentar == JOptionPane.NO_OPTION) {
@@ -108,11 +119,11 @@ public class Aumento_Disminucion {
 			respuestaDisminuir = JOptionPane.showConfirmDialog(null, "�Quieres reajustar la imagen a disminuir brillo?",
 					"Reajustar", JOptionPane.YES_NO_CANCEL_OPTION);
 			if (respuestaDisminuir == JOptionPane.YES_OPTION) {
-				for (int i = 0; i < imagenDisminucionBrillo.rows(); i++) {
-					for (int j = 0; j < imagenDisminucionBrillo.cols(); j++) {
-						double[] pixelDisminucionBrillo = imagenDisminucionBrillo.get(i, j);
+				for (int i = 0; i < imagenDisminCont.rows(); i++) {
+					for (int j = 0; j < imagenDisminCont.cols(); j++) {
+						double[] pixelDisminucionBrillo = imagenDisminCont.get(i, j);
 						pixelDisminucionBrillo[0] = pixelDisminucionBrillo[0] - minValue;
-						imagenDisminucionBrillo.put(i, j, pixelDisminucionBrillo);
+						imagenDisminCont.put(i, j, pixelDisminucionBrillo);
 					}
 				}
 			} else if (respuestaDisminuir == JOptionPane.NO_OPTION) {
@@ -128,15 +139,16 @@ public class Aumento_Disminucion {
 
 		// Guardar la imagen transformada en la carpeta seleccionada
 		if (maxValue > 255) {
-			Imgcodecs.imwrite(rutaCarpetaDestino + "./Aumento_Reajustada.jpg", imagenAumentoBrillo);
+			Imgcodecs.imwrite(rutaCarpetaDestino + "./AumentoContraste_Reajustada.jpg", imagenAumentoCont);
 		} else {
-			Imgcodecs.imwrite(rutaCarpetaDestino + "./Aumento.jpg", imagenAumentoBrillo);
+			Imgcodecs.imwrite(rutaCarpetaDestino + "./AumentoContraste.jpg", imagenAumentoCont);
 		}
 		if (minValue < 0) {
-			Imgcodecs.imwrite(rutaCarpetaDestino + "./Disminuci�n_Reajustada.jpg", imagenDisminucionBrillo);
+			Imgcodecs.imwrite(rutaCarpetaDestino + "./Disminuci�nContraste_Reajustada.jpg", imagenDisminCont);
 		} else {
-			Imgcodecs.imwrite(rutaCarpetaDestino + "./Disminuci�n.jpg", imagenDisminucionBrillo);
+			Imgcodecs.imwrite(rutaCarpetaDestino + "./Disminuci�nContraste.jpg", imagenDisminCont);
 		}
+
 	}
 
 }

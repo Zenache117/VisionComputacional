@@ -146,23 +146,19 @@ public class AclaradoOscurecimiento {
 
 		// Seleccionar la carpeta destino para guardar la imagen transformada
 		CarpetaDestino carpeta = new CarpetaDestino();
-		
+
 		String carpetaDestino = carpeta.selectCarpet();
 
 		// Guardar la imagen transformada en la carpeta seleccionada
 		if (maxValue > 255 && respuestaAumentar == JOptionPane.YES_OPTION) {
-			Imgcodecs.imwrite(carpetaDestino + "./Aclarado_Reajustada.jpg",
-					imagenAumentoBrillo);
+			Imgcodecs.imwrite(carpetaDestino + "./Aclarado_Reajustada.jpg", imagenAumentoBrillo);
 		} else {
-			Imgcodecs.imwrite(carpetaDestino + "./Aclarado.jpg",
-					imagenAumentoBrillo);
+			Imgcodecs.imwrite(carpetaDestino + "./Aclarado.jpg", imagenAumentoBrillo);
 		}
 		if (minValue < 0 && respuestaDisminuir == JOptionPane.YES_OPTION) {
-			Imgcodecs.imwrite(carpetaDestino + "./Oscurecimiento_Reajustada.jpg",
-					imagenDisminucionBrillo);
+			Imgcodecs.imwrite(carpetaDestino + "./Oscurecimiento_Reajustada.jpg", imagenDisminucionBrillo);
 		} else {
-			Imgcodecs.imwrite(carpetaDestino + "./Oscurecimiento.jpg",
-					imagenDisminucionBrillo);
+			Imgcodecs.imwrite(carpetaDestino + "./Oscurecimiento.jpg", imagenDisminucionBrillo);
 		}
 
 	}
