@@ -12,6 +12,8 @@ import org.opencv.core.Mat;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
+
+
 public class Vecindarios {
 
 	public static void main(String[] args) {
@@ -130,6 +132,40 @@ public class Vecindarios {
 						if (yaCandidato == false && (difValor <= rango)) {
 							Posicion nuevoPotencial = new Posicion();
 							nuevoPotencial.setI(posActual.getI() - 1);
+							nuevoPotencial.setJ(posActual.getJ() - 1);
+							vecinosPotenciales.add(nuevoPotencial);
+						}
+
+					}
+				}
+				
+				// PIXEL INFERIOR IZQUIERDO DEL PIXEL ACTUAL
+
+				// revisar que el pixel a potencial como vecino exista dentro de los limites de
+				// la imagen
+				if (posActual.getI() + 1 < filas && posActual.getJ() - 1 >= 0) {
+					// revisar que el pixel a revisar como vecino potencial no tenga ya un
+					// vecindario asignado
+					if (imagenGris.get(posActual.getI() + 1).get(posActual.getJ() - 1).getVecindario() == -1) {
+						// revisar que el pixel no este ya en la lista de pixeles candidatos del
+						// vecindario
+						boolean yaCandidato = false;
+						for (Posicion revisar : vecinosPotenciales) {
+							if (imagenGris.get(posActual.getI() + 1).get(posActual.getJ() - 1).getI() == revisar.getI()
+									&& imagenGris.get(posActual.getI() + 1).get(posActual.getJ() - 1).getJ() == revisar
+											.getJ()) {
+								yaCandidato = true;
+							}
+						}
+						// revisar si la diferencia de valores esta dentro del rango para ser
+						// considerado vecino
+						int difValor = Math.abs(imagenGris.get(pxlVecCntrl.getI()).get(pxlVecCntrl.getJ()).getValor()
+								- imagenGris.get(posActual.getI() + 1).get(posActual.getJ() - 1).getValor());
+						// Si el pixel cumple con todo y no esta registrado ya, se va para la lista de
+						// pixeles candidatos a vecinos
+						if (yaCandidato == false && (difValor <= rango)) {
+							Posicion nuevoPotencial = new Posicion();
+							nuevoPotencial.setI(posActual.getI() + 1);
 							nuevoPotencial.setJ(posActual.getJ() - 1);
 							vecinosPotenciales.add(nuevoPotencial);
 						}
@@ -273,7 +309,7 @@ public class Vecindarios {
 
 					}
 				}
-
+				
 				// PIXEL INFERIOR DERECHO DEL PIXEL ACTUAL
 
 				// revisar que el pixel a potencial como vecino exista dentro de los limites de
@@ -425,14 +461,14 @@ public class Vecindarios {
 		String rutaCarpetaDestino = carpetaDestino.selectCarpet();
 
 		// Crear el archivo CSV
-		File archivoCSV = new File(rutaCarpetaDestino, "resultadosVecindarios.csv");
+		File vecindariosCSV = new File(rutaCarpetaDestino, "Vecindarios.csv");
 
 		try {
 			// Crear el FileWriter y BufferedWriter para escribir en el archivo CSV
-			FileWriter fw = new FileWriter(archivoCSV);
+			FileWriter fw = new FileWriter(vecindariosCSV);
 			BufferedWriter bw = new BufferedWriter(fw);
 
-			// Escribir los resultados en el archivo CSV
+			// Escribir los resultados en el archivo vecindariosCSV
 			bw.write("Fila,Columna,Vecindario, ,Cantidad de Vecindarios," + vecindarios.size());
 			bw.newLine();
 			for (List<List<Vecinos>> vecindario : vecindarios) {
@@ -446,9 +482,25 @@ public class Vecindarios {
 				// Salta una linea entre vecindarios para visualizarlos mejor en el CSV
 				bw.newLine();
 			}
-			bw.newLine();
-			bw.newLine();
 
+			// Cerrar el BufferedWriter y FileWriter
+			bw.close();
+			fw.close();
+
+			System.out.println("El archivo VecindarioCSV ha sido guardado en la ubicacion seleccionada.");
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		// Crear el archivo MatrizVecindariosCSV
+		File matrizCSV = new File(rutaCarpetaDestino, "MatrizVecindarios.csv");
+		try {
+			// Crear el FileWriter y BufferedWriter para escribir en el archivo CSV
+			FileWriter fw = new FileWriter(matrizCSV);
+			BufferedWriter bw = new BufferedWriter(fw);
+
+			// Escribir los resultados en el archivo CSV
 			for (List<Vecinos> vecindario : imagenGris) {
 				for (Vecinos veci : vecindario) {
 					String linea = veci.getVecindario() + ",";
@@ -461,7 +513,7 @@ public class Vecindarios {
 			bw.close();
 			fw.close();
 
-			System.out.println("El archivo CSV ha sido guardado en la ubicaci�n seleccionada.");
+			System.out.println("El archivo MatrizVecindariosCSV ha sido guardado en la ubicacion seleccionada.");
 
 		} catch (IOException e) {
 			e.printStackTrace();
