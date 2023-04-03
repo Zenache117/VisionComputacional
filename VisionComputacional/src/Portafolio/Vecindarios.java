@@ -469,12 +469,12 @@ public class Vecindarios {
 			BufferedWriter bw = new BufferedWriter(fw);
 
 			// Escribir los resultados en el archivo vecindariosCSV
-			bw.write("Fila,Columna,Vecindario, ,Cantidad de Vecindarios," + vecindarios.size());
+			bw.write("Fila,Columna,Vecindario,Valor,Cantidad de Vecindarios," + vecindarios.size());
 			bw.newLine();
 			for (List<List<Vecinos>> vecindario : vecindarios) {
 				for (List<Vecinos> veci : vecindario) {
 					for (Vecinos vec : veci) {
-						String linea = vec.getI() + "," + vec.getJ() + "," + vec.getVecindario();
+						String linea = vec.getI() + "," + vec.getJ() + "," + vec.getVecindario()+","+vec.getValor();
 						bw.write(linea);
 						bw.newLine();
 					}
