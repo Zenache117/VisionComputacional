@@ -1,5 +1,8 @@
 package Portafolio;
 
+import java.io.FileWriter;
+import java.io.IOException;
+
 import javax.swing.JOptionPane;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
@@ -136,6 +139,39 @@ public class Aumento_Disminucion {
 			Imgcodecs.imwrite(rutaCarpetaDestino + "./Disminuci�n_Reajustada.jpg", imagenDisminucionBrillo);
 		} else {
 			Imgcodecs.imwrite(rutaCarpetaDestino + "./Disminuci�n.jpg", imagenDisminucionBrillo);
+		}
+		//Guardar matriz de imagen aumentada
+		try {
+		    FileWriter writer = new FileWriter(rutaCarpetaDestino + "/ImagenMatrizAumentada.csv");
+
+		    for (int i = 0; i < imagenAumentoBrillo.rows(); i++) {
+		        for (int j = 0; j < imagenAumentoBrillo.cols(); j++) {
+		            double[] value = imagenAumentoBrillo.get(i, j);
+		            writer.write(String.valueOf(value[0]) + ",");
+		        }
+		        writer.write("\n");
+		    }
+
+		    writer.close();
+		} catch (IOException e) {
+		    e.printStackTrace();
+		}
+
+		//Guardar matriz de imagen disminuida
+		try {
+		    FileWriter writer = new FileWriter(rutaCarpetaDestino + "/ImagenMatrizDisminuida.csv");
+
+		    for (int i = 0; i < imagenDisminucionBrillo.rows(); i++) {
+		        for (int j = 0; j < imagenDisminucionBrillo.cols(); j++) {
+		            double[] value = imagenDisminucionBrillo.get(i, j);
+		            writer.write(String.valueOf(value[0]) + ",");
+		        }
+		        writer.write("\n");
+		    }
+
+		    writer.close();
+		} catch (IOException e) {
+		    e.printStackTrace();
 		}
 	}
 

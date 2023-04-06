@@ -4,12 +4,13 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 import javax.swing.JOptionPane;
+
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
-public class AclaradoOscurecimiento {
+public class AclaradoOscurecimiento1Pixel {
 
 	public static void main(String[] args) {
 
@@ -27,23 +28,32 @@ public class AclaradoOscurecimiento {
 		// Convertir la imagen a escala de grises
 		Mat imageGray = new Mat();
 		Imgproc.cvtColor(image, imageGray, Imgproc.COLOR_BGR2GRAY);
+		///////////////////////////////////////////////
+		// Obtener el tamaño de la imagen
+        int height = imageGray.rows();
+        int width = imageGray.cols();
 
-		// Crear matrices de imagenes en funci�n a las dimenciones originales
+        // Preguntar al usuario las coordenadas del pixel a modificar
+        int row = -1, col = -1;
+        while (row < 0 || row >= height || col < 0 || col >= width) {
+            String input = JOptionPane.showInputDialog("Ingrese la fila y columna del pixel a modificar (x,y)");
+            String[] coords = input.split(",");
+            row = Integer.parseInt(coords[0].trim());
+            col = Integer.parseInt(coords[1].trim());
+        }
+
+        // Obtener el valor del pixel seleccionado
+        double[] pixelValue = imageGray.get(row, col);
+        ///////////////////////////////////////////////////////////////////////////////
+        
+		// Crear matrices de imagenes en funcion a las dimenciones originales
 		Mat imagenDisminucionBrillo = new Mat(imageGray.rows(), imageGray.cols(), imageGray.type());
 		Mat imagenAumentoBrillo = new Mat(imageGray.rows(), imageGray.cols(), imageGray.type());
 
 		// Pedir valor para diferenciar de donde aclarar y desde donde disminuir
-		int valorDivisorio = -1;
+		double valorDivisorio = pixelValue[0];
 
-		while (valorDivisorio > 255 || valorDivisorio < 0) {
-			valorDivisorio = Integer
-					.parseInt(JOptionPane.showInputDialog("Dame el valor divisorio para aclarar y oscurecer"));
-			if (valorDivisorio > 255 || valorDivisorio < 0) {
-				JOptionPane.showMessageDialog(null, "El valor debe estar entre 0 y 255");
-			}
-		}
-
-		// Pedir valor a disminu�r y aumentar
+		// Pedir valor a disminuir y aumentar
 		int valorDisminucionBrillo = -1;
 		int valorAumentoBrillo = -1;
 
@@ -56,7 +66,7 @@ public class AclaradoOscurecimiento {
 		}
 
 		if (valorDisminucionBrillo == 0) {
-			JOptionPane.showMessageDialog(null, "No disminuira el brillo por ser un valor nulo, quedar� igual");
+			JOptionPane.showMessageDialog(null, "No disminuira el brillo por ser un valor nulo, quedara igual");
 		}
 
 		while (valorAumentoBrillo > 255 || valorAumentoBrillo < 0) {
@@ -67,85 +77,69 @@ public class AclaradoOscurecimiento {
 		}
 
 		if (valorAumentoBrillo == 0) {
-			JOptionPane.showMessageDialog(null, "No aumentara el brillo por ser un valor nulo, quedar� igual");
+			JOptionPane.showMessageDialog(null, "No aumentara el brillo por ser un valor nulo, quedara igual");
 		}
 
 		// Definir variables para resguardar el valor maximo y minimo alcanzado por los
 		// pixeles en sus modificaciones
 		double minValue = Double.MAX_VALUE;
 		double maxValue = Double.MIN_VALUE;
-
+		
 		// Comenzar tratamiento de pixeles
-		for (int i = 0; i < imageGray.rows(); i++) {
-			for (int j = 0; j < imageGray.cols(); j++) {
-				double[] pixelOriginal = imageGray.get(i, j);
+		double[] pixelOriginal = imageGray.get(row, col);
 
-				// Disminuci�n de brillo
-				if (pixelOriginal[0] <= valorDivisorio) {
-					double[] pixelDisminucionBrillo = new double[] { pixelOriginal[0] - valorDisminucionBrillo };
-					imagenDisminucionBrillo.put(i, j, pixelDisminucionBrillo);
+		// Disminucion de brillo
+		if (pixelOriginal[0] <= valorDivisorio) {
+		    double[] pixelDisminucionBrillo = new double[] { pixelValue[0] - valorDisminucionBrillo };
+		    imagenDisminucionBrillo.put(row, col, pixelDisminucionBrillo);
 
-					// Actualiza minValue si es necesario
-					minValue = Math.min(minValue, pixelDisminucionBrillo[0]);
-				} else {
-					imagenDisminucionBrillo.put(i, j, pixelOriginal);
-					// Actualiza minValue si es necesario
-					minValue = Math.min(minValue, pixelOriginal[0]);
-				}
+		    // Actualiza minValue si es necesario
+		    minValue = Math.min(minValue, pixelDisminucionBrillo[0]);
+		} else {
+		    imagenDisminucionBrillo.put(row, col, pixelOriginal);
+		    // Actualiza minValue si es necesario
+		    minValue = Math.min(minValue, pixelOriginal[0]);
+		}
 
-				if (pixelOriginal[0] >= valorDivisorio) {
-					// Aumento de brillo
-					double[] pixelAumentoBrillo = new double[] { pixelOriginal[0] + valorAumentoBrillo };
-					imagenAumentoBrillo.put(i, j, pixelAumentoBrillo);
+		if (pixelOriginal[0] >= valorDivisorio) {
+		    // Aumento de brillo
+		    double[] pixelAumentoBrillo = new double[] { pixelValue[0] + valorAumentoBrillo };
+		    imagenAumentoBrillo.put(row, col, pixelAumentoBrillo);
 
-					// Actualiza maxValue si es necesario
-					maxValue = Math.max(maxValue, pixelAumentoBrillo[0]);
-				} else {
-					imagenAumentoBrillo.put(i, j, pixelOriginal);
-					// Actualiza maxValue si es necesario
-					maxValue = Math.max(maxValue, pixelOriginal[0]);
-				}
-			}
+		    // Actualiza maxValue si es necesario
+		    maxValue = Math.max(maxValue, pixelAumentoBrillo[0]);
+		} else {
+		    imagenAumentoBrillo.put(row, col, pixelOriginal);
+		    // Actualiza maxValue si es necesario
+		    maxValue = Math.max(maxValue, pixelOriginal[0]);
 		}
 
 		// Reajustar los pixeles de imagenAumentoBrillo
 		int respuestaAumentar = 100;
 		int respuestaDisminuir = 100;
 		if (maxValue > 255) {
-			respuestaAumentar = JOptionPane.showConfirmDialog(null,
-					"�Quieres reajustar la imagen que aumentara el brillo?", "Reajustar",
-					JOptionPane.YES_NO_CANCEL_OPTION);
-			if (respuestaAumentar == JOptionPane.YES_OPTION) {
-				for (int i = 0; i < imagenAumentoBrillo.rows(); i++) {
-					for (int j = 0; j < imagenAumentoBrillo.cols(); j++) {
-						double[] pixelAumentoBrillo = imagenAumentoBrillo.get(i, j);
-						pixelAumentoBrillo[0] = (pixelAumentoBrillo[0] / maxValue) * 255;
-						imagenAumentoBrillo.put(i, j, pixelAumentoBrillo);
-					}
-				}
-			} else if (respuestaAumentar == JOptionPane.NO_OPTION) {
-				JOptionPane.showMessageDialog(null,
-						"No se reajustara la imagen apesar que algunos pixeles tienen valores mayores a 255");
-			}
+		    respuestaAumentar = JOptionPane.showConfirmDialog(null,"¿Quieres reajustar la imagen que aumentara el brillo?", "Reajustar",JOptionPane.YES_NO_CANCEL_OPTION);
+		    if (respuestaAumentar == JOptionPane.YES_OPTION) {
+		        double[] pixelAumentoBrillo = imagenAumentoBrillo.get(row, col);
+		        pixelAumentoBrillo[0] = (pixelAumentoBrillo[0] / maxValue) * 255;
+		        imagenAumentoBrillo.put(row, col, pixelAumentoBrillo);
+		    } else if (respuestaAumentar == JOptionPane.NO_OPTION) {
+		        JOptionPane.showMessageDialog(null,"No se reajustara la imagen apesar que algunos pixeles tienen valores mayores a 255");
+		    }
 		}
-
+		
 		// Reajustar los pixeles de imagenDisminucionBrillo
 		if (minValue < 0) {
-			respuestaDisminuir = JOptionPane.showConfirmDialog(null, "�Quieres reajustar la imagen a disminuir brillo?",
-					"Reajustar", JOptionPane.YES_NO_CANCEL_OPTION);
+			respuestaDisminuir = JOptionPane.showConfirmDialog(null, "¿Quieres reajustar la imagen que disminuira el brillo?","Reajustar", JOptionPane.YES_NO_CANCEL_OPTION);
 			if (respuestaDisminuir == JOptionPane.YES_OPTION) {
-				for (int i = 0; i < imagenDisminucionBrillo.rows(); i++) {
-					for (int j = 0; j < imagenDisminucionBrillo.cols(); j++) {
-						double[] pixelDisminucionBrillo = imagenDisminucionBrillo.get(i, j);
-						pixelDisminucionBrillo[0] = pixelDisminucionBrillo[0] - minValue;
-						imagenDisminucionBrillo.put(i, j, pixelDisminucionBrillo);
-					}
-				}
+				double[] pixelDisminucionBrillo = imagenDisminucionBrillo.get(row, col);
+				pixelDisminucionBrillo[0] = ((pixelDisminucionBrillo[0] - minValue) / (valorDivisorio - minValue)) * 255;
+				imagenDisminucionBrillo.put(row, col, pixelDisminucionBrillo);
 			} else if (respuestaDisminuir == JOptionPane.NO_OPTION) {
-				JOptionPane.showMessageDialog(null,
-						"No se reajustara la imagen apesar que algunos pixeles tienen valores menores a 0");
+				JOptionPane.showMessageDialog(null,"No se reajustara la imagen apesar que algunos pixeles tienen valores menores a 0");
 			}
 		}
+		
 
 		// Seleccionar la carpeta destino para guardar la imagen transformada
 		CarpetaDestino carpeta = new CarpetaDestino();
@@ -163,7 +157,7 @@ public class AclaradoOscurecimiento {
 		} else {
 			Imgcodecs.imwrite(carpetaDestino + "./Oscurecimiento.jpg", imagenDisminucionBrillo);
 		}
-
+		
 		//Guardar matriz de imagen aumentada
 		try {
 		    FileWriter writer = new FileWriter(carpetaDestino + "/ImagenMatrizAclarada.csv");
@@ -197,6 +191,6 @@ public class AclaradoOscurecimiento {
 		} catch (IOException e) {
 		    e.printStackTrace();
 		}
-	}
 
+	}
 }

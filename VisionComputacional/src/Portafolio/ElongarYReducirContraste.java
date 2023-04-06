@@ -1,5 +1,8 @@
 package Portafolio;
 
+import java.io.FileWriter;
+import java.io.IOException;
+
 import javax.swing.JOptionPane;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
@@ -41,7 +44,7 @@ public class ElongarYReducirContraste {
 
 		if (factorDisminucion == 0) {
 			JOptionPane.showMessageDialog(null,
-					"El factor de disminuci�n tiene un valor nulo, la imagen resultante no cambiara");
+					"El factor de disminucion tiene un valor nulo, la imagen resultante no cambiara");
 		}
 
 		while (factorAumento > 2 || factorAumento < 1) {
@@ -97,7 +100,7 @@ public class ElongarYReducirContraste {
 		int respuestaDisminuir = 100;
 		if (maxValue > 255) {
 			respuestaAumentar = JOptionPane.showConfirmDialog(null,
-					"�Quieres reajustar la imagen que aumentara el brillo?", "Reajustar",
+					"¿Quieres reajustar la imagen que aumentara el brillo?", "Reajustar",
 					JOptionPane.YES_NO_CANCEL_OPTION);
 			if (respuestaAumentar == JOptionPane.YES_OPTION) {
 				for (int i = 0; i < imagenAumentoCont.rows(); i++) {
@@ -115,7 +118,7 @@ public class ElongarYReducirContraste {
 
 		// Reajustar los pixeles de imagenDisminucionBrillo
 		if (minValue < 0) {
-			respuestaDisminuir = JOptionPane.showConfirmDialog(null, "�Quieres reajustar la imagen a disminuir brillo?",
+			respuestaDisminuir = JOptionPane.showConfirmDialog(null, "¿Quieres reajustar la imagen a disminuir brillo?",
 					"Reajustar", JOptionPane.YES_NO_CANCEL_OPTION);
 			if (respuestaDisminuir == JOptionPane.YES_OPTION) {
 				for (int i = 0; i < imagenDisminCont.rows(); i++) {
@@ -143,11 +146,44 @@ public class ElongarYReducirContraste {
 			Imgcodecs.imwrite(rutaCarpetaDestino + "./AumentoContraste.jpg", imagenAumentoCont);
 		}
 		if (minValue < 0) {
-			Imgcodecs.imwrite(rutaCarpetaDestino + "./Disminuci�nContraste_Reajustada.jpg", imagenDisminCont);
+			Imgcodecs.imwrite(rutaCarpetaDestino + "./DisminucionContraste_Reajustada.jpg", imagenDisminCont);
 		} else {
-			Imgcodecs.imwrite(rutaCarpetaDestino + "./Disminuci�nContraste.jpg", imagenDisminCont);
+			Imgcodecs.imwrite(rutaCarpetaDestino + "./DisminucionContraste.jpg", imagenDisminCont);
 		}
 
+		//Guardar matriz de imagen aumentada
+		try {
+		    FileWriter writer = new FileWriter(rutaCarpetaDestino + "/ImagenMatrizContrasteElongado.csv");
+
+		    for (int i = 0; i < imagenAumentoCont.rows(); i++) {
+		        for (int j = 0; j < imagenAumentoCont.cols(); j++) {
+		            double[] value = imagenAumentoCont.get(i, j);
+		            writer.write(String.valueOf(value[0]) + ",");
+		        }
+		        writer.write("\n");
+		    }
+
+		    writer.close();
+		} catch (IOException e) {
+		    e.printStackTrace();
+		}
+
+		//Guardar matriz de imagen disminuida
+		try {
+		    FileWriter writer = new FileWriter(rutaCarpetaDestino + "/ImagenMatrizContrasteDisminuido.csv");
+
+		    for (int i = 0; i < imagenDisminCont.rows(); i++) {
+		        for (int j = 0; j < imagenDisminCont.cols(); j++) {
+		            double[] value = imagenDisminCont.get(i, j);
+		            writer.write(String.valueOf(value[0]) + ",");
+		        }
+		        writer.write("\n");
+		    }
+
+		    writer.close();
+		} catch (IOException e) {
+		    e.printStackTrace();
+		}
 	}
 
 }

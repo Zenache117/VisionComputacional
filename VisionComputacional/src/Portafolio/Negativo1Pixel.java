@@ -28,8 +28,6 @@ public class Negativo1Pixel {
 			Mat imageGray = new Mat();
 			Imgproc.cvtColor(image, imageGray, Imgproc.COLOR_BGR2GRAY);
 
-			Mat Negativo = new Mat(imageGray.rows(), imageGray.cols(), CvType.CV_8UC1);
-
 	        // Obtener el tamaño de la imagen
 	        int height = imageGray.rows();
 	        int width = imageGray.cols();

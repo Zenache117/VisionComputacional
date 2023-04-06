@@ -1,5 +1,8 @@
 package Portafolio;
 
+import java.io.FileWriter;
+import java.io.IOException;
+
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
@@ -44,5 +47,23 @@ public class Negativo {
 		// Guardar la imagen transformada en la carpeta seleccionada
 		Imgcodecs.imwrite(rutaCarpetaDestino + "./Negativo.jpg", Negativo);
 
+		// Guardar matriz de imagen
+        FileWriter writer;
+        try {
+            writer = new FileWriter(rutaCarpetaDestino + "/ImagenMatriz.csv");
+
+            for (int i = 0; i < Negativo.rows(); i++) {
+                for (int j = 0; j < Negativo.cols(); j++) {
+                    double[] value = Negativo.get(i, j);
+                    writer.write(String.valueOf(value[0]) + ",");
+                }
+                writer.write("\n");
+            }
+
+            writer.close();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 	}
 }
