@@ -6,6 +6,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -105,22 +106,35 @@ public class FiltroMediana {
 			e.printStackTrace();
 		}
 	}
-	
-	public void CalcularMediana(Mat pixels, List<List<Vecinos>> vecindarios) {
-		 // Iterar sobre los píxeles de la imagen y aplicar el filtro de mediana manualmente
-	    for (List<Vecinos> vecindario : vecindarios) {
-	        int size = vecindario.size();
-	        int[] valores = new int[size];
-	        int idx = 0;
-	        for (Vecinos vecino : vecindario) {
-	            valores[idx++] = vecino.getValor();
-	        }
-	        Arrays.sort(valores);
-	        int mediana = size % 2 == 0 ? (valores[size/2-1] + valores[size/2]) / 2 : valores[size/2];
-	        int i = vecindario.get(0).getI();
-	        int j = vecindario.get(0).getJ();
-	        pixels.put(i, j, mediana);
-	    }
-	}
 
+	public void CalcularMediana(Mat pixels, List<List<Vecinos>> vecindarios) {
+		// Iterar sobre los vecindarios
+		for (List<Vecinos> vecindario : vecindarios) {
+			// Obtener los valores de los vecinos en el vecindario
+			List<Integer> valoresVecinos = new ArrayList<>();
+			for (Vecinos vecino : vecindario) {
+				valoresVecinos.add(vecino.getValor());
+			}
+
+			// Ordenar los valores de los vecinos
+			Collections.sort(valoresVecinos);
+
+			// Obtener la mediana de los valores
+			int mediana;
+			int tam = valoresVecinos.size();
+			if (tam % 2 == 0) {
+				// Si el tamaño de la lista es par, se toma el promedio de los dos valores del
+				// medio
+				mediana = (valoresVecinos.get(tam / 2 - 1) + valoresVecinos.get(tam / 2)) / 2;
+			} else {
+				// Si el tamaño de la lista es impar, se toma el valor del medio
+				mediana = valoresVecinos.get(tam / 2);
+			}
+
+			// Asignar el valor de la mediana al píxel correspondiente en la matriz
+			int i = vecindario.get(0).getI();
+			int j = vecindario.get(0).getJ();
+			pixels.put(i, j, mediana);
+		}
+	}
 }
