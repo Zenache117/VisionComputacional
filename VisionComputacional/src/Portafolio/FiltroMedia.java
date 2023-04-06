@@ -1,13 +1,11 @@
 package Portafolio;
 
-import java.io.BufferedWriter;
-import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.Reader;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -16,7 +14,6 @@ import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.imgcodecs.Imgcodecs;
-
 
 public class FiltroMedia {
 
@@ -29,103 +26,99 @@ public class FiltroMedia {
 
 		String rutaArchivo = archivoSeleccionado.selectFile();
 
-		List<List<List<Vecinos>>> vecindariosLeidos = new ArrayList<>();
-		try {
-			Reader reader = Files.newBufferedReader(Paths.get(rutaArchivo));
-			CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.withFirstRecordAsHeader());
+		List<List<Vecinos>> vecindarios = new ArrayList<>();
+		List<Vecinos> vecindarioActual = null;
+		int vecindarioAnterior = -1;
 
-			for (CSVRecord record : csvParser) {
-				int i = Integer.parseInt(record.get("Fila"));
-				int j = Integer.parseInt(record.get("Columna"));
+		try (CSVParser parser = new CSVParser(new FileReader(rutaArchivo), CSVFormat.DEFAULT.withHeader())) {
+			for (CSVRecord record : parser) {
+				int fila = Integer.parseInt(record.get("Fila"));
+				int columna = Integer.parseInt(record.get("Columna"));
 				int vecindario = Integer.parseInt(record.get("Vecindario"));
 				int valor = Integer.parseInt(record.get("Valor"));
 
-				// Crear un nuevo objeto Vecinos y agregarlo a la lista correspondiente
-				Vecinos vecino = new Vecinos();
-				vecino.setI(i);
-				vecino.setJ(j);
-				vecino.setVecindario(vecindario);
-				vecino.setValor(valor);
+				Vecinos vecinoActual = new Vecinos();
+				vecinoActual.setI(fila);
+				vecinoActual.setJ(columna);
+				vecinoActual.setValor(valor);
 
-				if (vecindariosLeidos.size() <= vecindario) {
-					// Agregar una nueva lista de vecinos para este vecindario si no existe aún
-					vecindariosLeidos.add(new ArrayList<>());
+				if (vecindario != vecindarioAnterior) {
+					vecindarioActual = new ArrayList<>();
+					vecindarios.add(vecindarioActual);
+					vecindarioAnterior = vecindario;
 				}
-				if (vecindariosLeidos.get(vecindario).size() <= i) {
-					// Agregar una nueva lista de vecinos para esta fila si no existe aún
-					vecindariosLeidos.get(vecindario).add(new ArrayList<>());
-				}
-				
-				vecindariosLeidos.get(vecindario).get(i).add(vecino);
-				
+
+				vecinoActual.setVecindario(vecindario);
+				vecindarioActual.add(vecinoActual);
 			}
-
-		} catch (Exception e) {
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
-		// Iterar a través de la lista de vecindarios
-		for (List<List<Vecinos>> vecindario : vecindariosLeidos) {
-			// Iterar a través de cada vecindario en la lista
-			for (List<Vecinos> veci : vecindario) {
-				// Crear una lista para almacenar los valores de los vecinos en el vecindario
-				List<Integer> valores = new ArrayList<>();
-				// Iterar a través de cada vecino en el vecindario y agregar su valor a la lista
-				// de valores
-				for (Vecinos vec : veci) {
-					valores.add(vec.getValor());
-				}
-				// Calcular la media de los valores en la lista
-				double media = valores.stream().mapToInt(val -> val).average().orElse(0.0);
-				// Asignar el valor de la media a cada vecino en el vecindario
-				for (Vecinos vec : veci) {
-					vec.setValor((int) media);
-				}
-			}
-		}
-
-		// Obtener los valores máximos de i y j de los Vecinos en la lista (Para definir el tamaño de la imagen)
-		int maxI = -1;
-		int maxJ = -1;
-		for (List<List<Vecinos>> vecindario : vecindariosLeidos) {
-		    for (List<Vecinos> veci : vecindario) {
-		        for (Vecinos vec : veci) {
-		            maxI = Math.max(maxI, vec.getI());
-		            maxJ = Math.max(maxJ, vec.getJ());
+		// Encontrar los valores máximos de i y j en la lista
+		int maxI = 0;
+		int maxJ = 0;
+		for (List<Vecinos> vecindario : vecindarios) {
+		    for (Vecinos vecino : vecindario) {
+		        if (vecino.getI() > maxI) {
+		            maxI = vecino.getI();
+		        }
+		        if (vecino.getJ() > maxJ) {
+		            maxJ = vecino.getJ();
 		        }
 		    }
 		}
 
-		// Crear la imagen en escala de grises con el tamaño correspondiente
-		Mat img = new Mat(maxI+1, maxJ+1, CvType.CV_8UC1);
-		for (int k = 0; k < vecindariosLeidos.size(); k++) {
-		    List<List<Vecinos>> vecindario = vecindariosLeidos.get(k);
-		    for (List<Vecinos> fila : vecindario) {
-		        for (Vecinos vecino : fila) {
-		            int i = vecino.getI();
-		            int j = vecino.getJ();
-		            int valor = vecino.getValor();
-		            img.put(i, j, valor);
-		        }
-		    }
-		}
+		// Crear una matriz de píxeles de tamaño correspondiente
+		Mat pixels = new Mat(maxI + 1, maxJ + 1, CvType.CV_8UC1);
 
+		 // Iterar sobre los píxeles de la imagen y aplicar el filtro de media manualmente
+        for (List<Vecinos> vecindario : vecindarios) {
+            for (Vecinos vecino : vecindario) {
+                int i = vecino.getI();
+                int j = vecino.getJ();
+                int valor = vecino.getValor();
+
+                // Calcular la media de los valores de los píxeles vecinos
+                int suma = valor;
+                int numVecinos = 1;
+                for (int ii = i-1; ii <= i+1; ii++) {
+                    for (int jj = j-1; jj <= j+1; jj++) {
+                        if (ii >= 0 && jj >= 0 && ii < pixels.rows() && jj < pixels.cols() && !(ii == i && jj == j)) {
+                            suma += pixels.get(ii, jj)[0];
+                            numVecinos++;
+                        }
+                    }
+                }
+                int media = suma / numVecinos;
+
+                // Asignar el valor de la media al píxel de la imagen
+                pixels.put(i, j, media);
+            }
+        }
+		
+		
+
+		
 		// Seleccionar la carpeta destino para guardar la imagen transformada
 		CarpetaDestino carpetaDestino = new CarpetaDestino();
-
 		String rutaCarpetaDestino = carpetaDestino.selectCarpet();
 
-		// Guardar la imagen en la carpeta destino
-		String rutaImagenDestino = rutaCarpetaDestino + File.separator + "FiltroMedia.png";
-		Imgcodecs.imwrite(rutaImagenDestino, img);
+		// Guardar la imagen transformada en la carpeta seleccionada
+		Imgcodecs.imwrite(rutaCarpetaDestino + "./FiltroMedia.jpg", pixels);
 
+		// Guardar matriz de imagen
 		FileWriter writer;
 		try {
-			writer = new FileWriter(rutaCarpetaDestino + "/FiltroMedianaMatriz.csv");
+			writer = new FileWriter(rutaCarpetaDestino + "/ImagenMatrizFiltroMedia.csv");
 
-			for (int i = 0; i < img.rows(); i++) {
-				for (int j = 0; j < img.cols(); j++) {
-					double[] value = img.get(i, j);
+			for (int i = 0; i < pixels.rows(); i++) {
+				for (int j = 0; j < pixels.cols(); j++) {
+					double[] value = pixels.get(i, j);
 					writer.write(String.valueOf(value[0]) + ",");
 				}
 				writer.write("\n");
@@ -134,9 +127,10 @@ public class FiltroMedia {
 			writer.close();
 
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
+
+	
 
 }
