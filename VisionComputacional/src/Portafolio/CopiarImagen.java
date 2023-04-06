@@ -1,5 +1,8 @@
 package Portafolio;
 
+import java.io.FileWriter;
+import java.io.IOException;
+
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.imgcodecs.Imgcodecs;
@@ -46,5 +49,21 @@ public class CopiarImagen {
 		Imgcodecs.imwrite(rutaCarpetaDestino + "./Original.jpg", imageGray);
 		Imgcodecs.imwrite(rutaCarpetaDestino + "./ImagenCopia.jpg", imageCopia);
 
+		//Guardar matriz de imagen copiada
+				try {
+				    FileWriter writer = new FileWriter(rutaCarpetaDestino + "/ImagenMatrizCopia.csv");
+
+				    for (int i = 0; i < imageCopia.rows(); i++) {
+				        for (int j = 0; j < imageCopia.cols(); j++) {
+				            double[] value = imageCopia.get(i, j);
+				            writer.write(String.valueOf(value[0]) + ",");
+				        }
+				        writer.write("\n");
+				    }
+
+				    writer.close();
+				} catch (IOException e) {
+				    e.printStackTrace();
+				}
 	}
 }
