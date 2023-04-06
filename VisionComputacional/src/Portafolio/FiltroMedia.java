@@ -75,34 +75,9 @@ public class FiltroMedia {
 
 		// Crear una matriz de píxeles de tamaño correspondiente
 		Mat pixels = new Mat(maxI + 1, maxJ + 1, CvType.CV_8UC1);
-
-		 // Iterar sobre los píxeles de la imagen y aplicar el filtro de media manualmente
-        for (List<Vecinos> vecindario : vecindarios) {
-            for (Vecinos vecino : vecindario) {
-                int i = vecino.getI();
-                int j = vecino.getJ();
-                int valor = vecino.getValor();
-
-                // Calcular la media de los valores de los píxeles vecinos
-                int suma = valor;
-                int numVecinos = 1;
-                for (int ii = i-1; ii <= i+1; ii++) {
-                    for (int jj = j-1; jj <= j+1; jj++) {
-                        if (ii >= 0 && jj >= 0 && ii < pixels.rows() && jj < pixels.cols() && !(ii == i && jj == j)) {
-                            suma += pixels.get(ii, jj)[0];
-                            numVecinos++;
-                        }
-                    }
-                }
-                int media = suma / numVecinos;
-
-                // Asignar el valor de la media al píxel de la imagen
-                pixels.put(i, j, media);
-            }
-        }
 		
-		
-
+		FiltroMedia calulo = new FiltroMedia();
+		calulo.CalcularMedia(pixels, vecindarios);
 		
 		// Seleccionar la carpeta destino para guardar la imagen transformada
 		CarpetaDestino carpetaDestino = new CarpetaDestino();
@@ -130,7 +105,32 @@ public class FiltroMedia {
 			e.printStackTrace();
 		}
 	}
-
 	
+	public void CalcularMedia(Mat pixels, List<List<Vecinos>> vecindarios) {
+		// Iterar sobre los píxeles de la imagen y aplicar el filtro de media manualmente
+        for (List<Vecinos> vecindario : vecindarios) {
+            for (Vecinos vecino : vecindario) {
+                int i = vecino.getI();
+                int j = vecino.getJ();
+                int valor = vecino.getValor();
 
+                // Calcular la media de los valores de los píxeles vecinos
+                int suma = valor;
+                int numVecinos = 1;
+                for (int ii = i-1; ii <= i+1; ii++) {
+                    for (int jj = j-1; jj <= j+1; jj++) {
+                        if (ii >= 0 && jj >= 0 && ii < pixels.rows() && jj < pixels.cols() && !(ii == i && jj == j)) {
+                            suma += pixels.get(ii, jj)[0];
+                            numVecinos++;
+                        }
+                    }
+                }
+                int media = suma / numVecinos;
+
+                // Asignar el valor de la media al píxel de la imagen
+                pixels.put(i, j, media);
+            }
+        }
+	}
+	
 }
