@@ -518,6 +518,10 @@ public class Vecindarios {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		
+		//Crear imagen de vecindarios a colores
+		VisualizacionVecindarios visualizar = new VisualizacionVecindarios();
+		visualizar.vecindariosColoreado(imageGray.width(), imageGray.height(), vecindarios);
 
 	}
 
