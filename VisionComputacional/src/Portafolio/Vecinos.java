@@ -6,6 +6,7 @@ public class Vecinos {
 	private int j;
 	private int valor;
 	private int vecindario = -1;
+	private boolean borde = false;
 	
 	public int getValor() {
 		return valor;
@@ -13,7 +14,6 @@ public class Vecinos {
 	public void setValor(int valor) {
 		this.valor = valor;
 	}
-	
 	public int getI() {
 		return i;
 	}
@@ -31,6 +31,12 @@ public class Vecinos {
 	}
 	public void setVecindario(int vecindario) {
 		this.vecindario = vecindario;
+	}
+	public boolean isBorde() {
+		return borde;
+	}
+	public void setBorde(boolean borde) {
+		this.borde = borde;
 	}
 	
 	

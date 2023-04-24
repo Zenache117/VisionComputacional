@@ -10,7 +10,7 @@ import org.opencv.imgcodecs.Imgcodecs;
 
 public class VisualizacionVecindarios {
 
-	public void vecindariosColoreado(int width, int height, List<List<List<Vecinos>>> vecindarios) {
+	public void vecindariosColoreado(int width, int height, List<List<List<Vecinos>>> vecindarios, String rutaCarpetaDestino) {
 
 		// Cargar la biblioteca OpenCV
 		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
@@ -41,12 +41,7 @@ public class VisualizacionVecindarios {
 		    }
 		}
 
-		// Seleccionar la carpeta destino para guardar la imagen transformada
-		CarpetaDestino carpetaDestino = new CarpetaDestino();
-
-		String rutaCarpetaDestino = carpetaDestino.selectCarpet();
-
-		// Guardar la imagen vecinsdarios a colores
+		// Guardar la imagen vecindarios a colores
 		Imgcodecs.imwrite(rutaCarpetaDestino + "./VecindariosColoreados.jpg", image);
 
 	}

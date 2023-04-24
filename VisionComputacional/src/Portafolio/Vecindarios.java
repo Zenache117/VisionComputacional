@@ -12,8 +12,6 @@ import org.opencv.core.Mat;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
-
-
 public class Vecindarios {
 
 	public static void main(String[] args) {
@@ -129,16 +127,24 @@ public class Vecindarios {
 								- imagenGris.get(posActual.getI() - 1).get(posActual.getJ() - 1).getValor());
 						// Si el pixel cumple con todo y no esta registrado ya, se va para la lista de
 						// pixeles candidatos a vecinos
-						if (yaCandidato == false && (difValor <= rango)) {
-							Posicion nuevoPotencial = new Posicion();
-							nuevoPotencial.setI(posActual.getI() - 1);
-							nuevoPotencial.setJ(posActual.getJ() - 1);
-							vecinosPotenciales.add(nuevoPotencial);
+						if (yaCandidato == false ) {
+							if(difValor <= rango) {
+								Posicion nuevoPotencial = new Posicion();
+								nuevoPotencial.setI(posActual.getI() - 1);
+								nuevoPotencial.setJ(posActual.getJ() - 1);
+								vecinosPotenciales.add(nuevoPotencial);
+							}else {// El pixel actual sería borde
+								imagenGris.get(posActual.getI()).get(posActual.getJ()).setBorde(true);
+							}
 						}
-
+					}else {
+						//Revisar si el pixel actual es borde
+						if(imagenGris.get(posActual.getI()).get(posActual.getJ()).getVecindario() != imagenGris.get(posActual.getI() - 1).get(posActual.getJ() - 1).getVecindario()) {
+							imagenGris.get(posActual.getI()).get(posActual.getJ()).setBorde(true);
+						}
 					}
 				}
-				
+
 				// PIXEL INFERIOR IZQUIERDO DEL PIXEL ACTUAL
 
 				// revisar que el pixel a potencial como vecino exista dentro de los limites de
@@ -163,13 +169,22 @@ public class Vecindarios {
 								- imagenGris.get(posActual.getI() + 1).get(posActual.getJ() - 1).getValor());
 						// Si el pixel cumple con todo y no esta registrado ya, se va para la lista de
 						// pixeles candidatos a vecinos
-						if (yaCandidato == false && (difValor <= rango)) {
+						if (yaCandidato == false ) {
+							if(difValor <= rango) {
 							Posicion nuevoPotencial = new Posicion();
 							nuevoPotencial.setI(posActual.getI() + 1);
 							nuevoPotencial.setJ(posActual.getJ() - 1);
 							vecinosPotenciales.add(nuevoPotencial);
+							}else {// El pixel actual sería borde
+								imagenGris.get(posActual.getI()).get(posActual.getJ()).setBorde(true);
+							}
 						}
 
+					}else {
+						//Revisar si el pixel actual es borde
+						if(imagenGris.get(posActual.getI()).get(posActual.getJ()).getVecindario() != imagenGris.get(posActual.getI() + 1).get(posActual.getJ() - 1).getVecindario()) {
+							imagenGris.get(posActual.getI()).get(posActual.getJ()).setBorde(true);
+						}
 					}
 				}
 
@@ -197,13 +212,22 @@ public class Vecindarios {
 								- imagenGris.get(posActual.getI() - 1).get(posActual.getJ()).getValor());
 						// Si el pixel cumple con todo y no esta registrado ya, se va para la lista de
 						// pixeles candidatos a vecinos
-						if (yaCandidato == false && (difValor <= rango)) {
+						if (yaCandidato == false ) {
+							if(difValor <= rango) {
 							Posicion nuevoPotencial = new Posicion();
 							nuevoPotencial.setI(posActual.getI() - 1);
 							nuevoPotencial.setJ(posActual.getJ());
 							vecinosPotenciales.add(nuevoPotencial);
+							}else {// El pixel actual sería borde
+								imagenGris.get(posActual.getI()).get(posActual.getJ()).setBorde(true);
+							}
 						}
 
+					}else {
+						//Revisar si el pixel actual es borde
+						if(imagenGris.get(posActual.getI()).get(posActual.getJ()).getVecindario() != imagenGris.get(posActual.getI() - 1).get(posActual.getJ()).getVecindario()) {
+							imagenGris.get(posActual.getI()).get(posActual.getJ()).setBorde(true);
+						}
 					}
 				}
 
@@ -232,13 +256,22 @@ public class Vecindarios {
 								- imagenGris.get(posActual.getI() + 1).get(posActual.getJ()).getValor());
 						// Si el pixel cumple con todo y no esta registrado ya, se va para la lista de
 						// pixeles candidatos a vecinos
-						if (yaCandidato == false && (difValor <= rango)) {
+						if (yaCandidato == false ) {
+							if(difValor <= rango) {
 							Posicion nuevoPotencial = new Posicion();
 							nuevoPotencial.setI(posActual.getI() + 1);
 							nuevoPotencial.setJ(posActual.getJ());
 							vecinosPotenciales.add(nuevoPotencial);
+							}else {// El pixel actual sería borde
+								imagenGris.get(posActual.getI()).get(posActual.getJ()).setBorde(true);
+							}
 						}
 
+					}else {
+						//Revisar si el pixel actual es borde
+						if(imagenGris.get(posActual.getI()).get(posActual.getJ()).getVecindario() != imagenGris.get(posActual.getI() + 1).get(posActual.getJ()).getVecindario()) {
+							imagenGris.get(posActual.getI()).get(posActual.getJ()).setBorde(true);
+						}
 					}
 				}
 
@@ -266,13 +299,22 @@ public class Vecindarios {
 								- imagenGris.get(posActual.getI() - 1).get(posActual.getJ() + 1).getValor());
 						// Si el pixel cumple con todo y no esta registrado ya, se va para la lista de
 						// pixeles candidatos a vecinos
-						if (yaCandidato == false && (difValor <= rango)) {
+						if (yaCandidato == false ) {
+							if(difValor <= rango) {
 							Posicion nuevoPotencial = new Posicion();
 							nuevoPotencial.setI(posActual.getI() - 1);
 							nuevoPotencial.setJ(posActual.getJ() + 1);
 							vecinosPotenciales.add(nuevoPotencial);
+							}else {// El pixel actual sería borde
+								imagenGris.get(posActual.getI()).get(posActual.getJ()).setBorde(true);
+							}
 						}
 
+					}else {
+						//Revisar si el pixel actual es borde
+						if(imagenGris.get(posActual.getI()).get(posActual.getJ()).getVecindario() != imagenGris.get(posActual.getI() - 1).get(posActual.getJ() + 1).getVecindario()) {
+							imagenGris.get(posActual.getI()).get(posActual.getJ()).setBorde(true);
+						}
 					}
 				}
 
@@ -300,16 +342,25 @@ public class Vecindarios {
 								- imagenGris.get(posActual.getI()).get(posActual.getJ() + 1).getValor());
 						// Si el pixel cumple con todo y no esta registrado ya, se va para la lista de
 						// pixeles candidatos a vecinos
-						if (yaCandidato == false && (difValor <= rango)) {
+						if (yaCandidato == false ) {
+							if(difValor <= rango) {
 							Posicion nuevoPotencial = new Posicion();
 							nuevoPotencial.setI(posActual.getI());
 							nuevoPotencial.setJ(posActual.getJ() + 1);
 							vecinosPotenciales.add(nuevoPotencial);
+							}else {// El pixel actual sería borde
+								imagenGris.get(posActual.getI()).get(posActual.getJ()).setBorde(true);
+							}
 						}
 
+					}else {
+						//Revisar si el pixel actual es borde
+						if(imagenGris.get(posActual.getI()).get(posActual.getJ()).getVecindario() != imagenGris.get(posActual.getI()).get(posActual.getJ() + 1).getVecindario()) {
+							imagenGris.get(posActual.getI()).get(posActual.getJ()).setBorde(true);
+						}
 					}
 				}
-				
+
 				// PIXEL INFERIOR DERECHO DEL PIXEL ACTUAL
 
 				// revisar que el pixel a potencial como vecino exista dentro de los limites de
@@ -334,13 +385,22 @@ public class Vecindarios {
 								- imagenGris.get(posActual.getI() + 1).get(posActual.getJ() + 1).getValor());
 						// Si el pixel cumple con todo y no esta registrado ya, se va para la lista de
 						// pixeles candidatos a vecinos
-						if (yaCandidato == false && (difValor <= rango)) {
+						if (yaCandidato == false ) {
+							if(difValor <= rango) {
 							Posicion nuevoPotencial = new Posicion();
 							nuevoPotencial.setI(posActual.getI() + 1);
 							nuevoPotencial.setJ(posActual.getJ() + 1);
 							vecinosPotenciales.add(nuevoPotencial);
+							}else {// El pixel actual sería borde
+								imagenGris.get(posActual.getI()).get(posActual.getJ()).setBorde(true);
+							}
 						}
 
+					}else {
+						//Revisar si el pixel actual es borde
+						if(imagenGris.get(posActual.getI()).get(posActual.getJ()).getVecindario() != imagenGris.get(posActual.getI() + 1).get(posActual.getJ() + 1).getVecindario()) {
+							imagenGris.get(posActual.getI()).get(posActual.getJ()).setBorde(true);
+						}
 					}
 				}
 
@@ -406,6 +466,7 @@ public class Vecindarios {
 							vec.setJ(imagenGris.get(x).get(y).getJ());
 							vec.setValor(imagenGris.get(x).get(y).getValor());
 							vec.setVecindario(imagenGris.get(x).get(y).getVecindario());
+							vec.setBorde(imagenGris.get(x).get(y).isBorde());
 							fila.add(vec);
 							ElmtsEnVecindarios++;
 						}
@@ -474,7 +535,7 @@ public class Vecindarios {
 			for (List<List<Vecinos>> vecindario : vecindarios) {
 				for (List<Vecinos> veci : vecindario) {
 					for (Vecinos vec : veci) {
-						String linea = vec.getI() + "," + vec.getJ() + "," + vec.getVecindario()+","+vec.getValor();
+						String linea = vec.getI() + "," + vec.getJ() + "," + vec.getVecindario() + "," + vec.getValor();
 						bw.write(linea);
 						bw.newLine();
 					}
@@ -518,10 +579,14 @@ public class Vecindarios {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
-		//Crear imagen de vecindarios a colores
+
+		// Crear imagen de vecindarios a colores
 		VisualizacionVecindarios visualizar = new VisualizacionVecindarios();
-		visualizar.vecindariosColoreado(imageGray.width(), imageGray.height(), vecindarios);
+		visualizar.vecindariosColoreado(imageGray.width(), imageGray.height(), vecindarios, rutaCarpetaDestino);
+
+		// Crear imagen de bordes de vecindario
+		BordesDeVecindario bordes = new BordesDeVecindario();
+		bordes.binarizarBordes(imageGray.width(), imageGray.height(), vecindarios, rutaCarpetaDestino);
 
 	}
 
