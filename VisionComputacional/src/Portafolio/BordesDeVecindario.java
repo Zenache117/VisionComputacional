@@ -1,5 +1,7 @@
 package Portafolio;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.List;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
@@ -26,6 +28,23 @@ public class BordesDeVecindario {
 
 		// Guardar la imagen de los bordes
 		Imgcodecs.imwrite(rutaCarpetaDestino + "./BordesBinarizados.jpg", imagenBinarizada);
+		
+		//Guardar matriz de imagen Bordes
+		try {
+		    FileWriter writer = new FileWriter(rutaCarpetaDestino + "/ImagenMatrizBordesBinarizados.csv");
+
+		    for (int i = 0; i < imagenBinarizada.rows(); i++) {
+		        for (int j = 0; j < imagenBinarizada.cols(); j++) {
+		            double[] value = imagenBinarizada.get(i, j);
+		            writer.write(String.valueOf(value[0]) + ",");
+		        }
+		        writer.write("\n");
+		    }
+
+		    writer.close();
+		} catch (IOException e) {
+		    e.printStackTrace();
+		}
 
 	}
 }

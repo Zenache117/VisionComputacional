@@ -43,6 +43,6 @@ public class VisualizacionVecindarios {
 
 		// Guardar la imagen vecindarios a colores
 		Imgcodecs.imwrite(rutaCarpetaDestino + "./VecindariosColoreados.jpg", image);
-
+		
 	}
 }
