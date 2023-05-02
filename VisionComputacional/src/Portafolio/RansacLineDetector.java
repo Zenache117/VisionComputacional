@@ -36,52 +36,66 @@ public class RansacLineDetector {
 	        }
 	    }
 
-		// RANSAC algorithm
-		Random random = new Random();
-		for (int l = 0; l < numLines; l++) {
-			Line bestLine = null;
-			int bestInliers = 0;
-			for (int i = 0; i < maxIterations; i++) {
-				// Select two random points
-				Point p1 = blackPixels.get(random.nextInt(blackPixels.size()));
-				Point p2 = blackPixels.get(random.nextInt(blackPixels.size()));
+	    // RANSAC algorithm
+	    Random random = new Random();
+	    for (int l = 0; l < numLines; l++) {
+	        Line bestLine = null;
+	        int bestInliers = 0;
+	        ArrayList<Point> bestInlierPoints = new ArrayList<>();
+	        for (int i = 0; i < maxIterations; i++) {
+	            // Select two random points
+	            Point p1 = blackPixels.get(random.nextInt(blackPixels.size()));
+	            Point p2 = blackPixels.get(random.nextInt(blackPixels.size()));
 
-				// Calculate line equation
-				Line line = new Line(p1.x, p1.y, p2.x, p2.y);
+	            // Calculate line equation
+	            Line line = new Line(p1.x, p1.y, p2.x, p2.y);
 
-				// Count inliers
-				int inliers = 0;
-				for (Point p : blackPixels) {
-					double distance = line.distance(p.x, p.y);
-					if (distance < distanceThreshold) {
-						inliers++;
-					}
-				}
+	            // Count inliers
+	            int inliers = 0;
+	            ArrayList<Point> inlierPoints = new ArrayList<>();
+	            for (Point p : blackPixels) {
+	                double distance = line.distance(p.x, p.y);
+	                if (distance < distanceThreshold) {
+	                    inliers++;
+	                    inlierPoints.add(p);
+	                }
+	            }
 
-				// Check if line is better than current best line
-				if (inliers > bestInliers && inliers > inlierThreshold) {
-					bestLine = line;
-					bestInliers = inliers;
-				}
-			}
+	            // Check if line is better than current best line
+	            if (inliers > bestInliers && inliers > inlierThreshold) {
+	                bestLine = line;
+	                bestInliers = inliers;
+	                bestInlierPoints = inlierPoints;
+	            }
+	        }
 
-			// Draw best line on image
-			if (bestLine != null) {
-				Point start = new Point(0, bestLine.getY(0));
-				Point end = new Point(image.width(), bestLine.getY(image.width()));
-				Imgproc.line(image, start, end, new Scalar(0, 255, 0), 2);
+	        // Draw best line on image
+	        if (bestLine != null) {
+	            double minX = Double.MAX_VALUE;
+	            double maxX = Double.MIN_VALUE;
+	            for (Point p : bestInlierPoints) {
+	                if (p.x < minX) {
+	                    minX = p.x;
+	                }
+	                if (p.x > maxX) {
+	                    maxX = p.x;
+	                }
+	            }
+	            Point start = new Point(minX, bestLine.getY(minX));
+	            Point end = new Point(maxX, bestLine.getY(maxX));
+	            Imgproc.line(image, start, end, new Scalar(0, 255, 0), 2);
 
-				// Remove inliers from black pixels
-				Iterator<Point> iterator = blackPixels.iterator();
-				while (iterator.hasNext()) {
-					Point p = iterator.next();
-					double distance = bestLine.distance(p.x, p.y);
-					if (distance < distanceThreshold) {
-						iterator.remove();
-					}
-				}
-			}
-		}
+	            // Remove inliers from black pixels
+	            Iterator<Point> iterator = blackPixels.iterator();
+	            while (iterator.hasNext()) {
+	                Point p = iterator.next();
+	                double distance = bestLine.distance(p.x, p.y);
+	                if (distance < distanceThreshold) {
+	                    iterator.remove();
+	                }
+	            }
+	        }
+	    }
 
 		// Seleccionar la carpeta destino para guardar la imagen lineas
 		CarpetaDestino carpetaDestino = new CarpetaDestino();

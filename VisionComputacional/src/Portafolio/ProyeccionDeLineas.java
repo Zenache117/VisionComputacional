@@ -20,7 +20,7 @@ public class ProyeccionDeLineas {
 		// Leer la imagen seleccionada
 		Mat image = Imgcodecs.imread(rutaImagen);
 
-		RansacLineDetector detector = new RansacLineDetector(100000, 5.0, 100, 100);
+		RansacLineDetector detector = new RansacLineDetector(1000, 1.0, 100, 50);
 		detector.detectLines(image);
 
 	}
