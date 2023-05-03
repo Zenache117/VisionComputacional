@@ -7,7 +7,9 @@ import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Random;
 
 public class RansacLineDetector {
@@ -15,12 +17,14 @@ public class RansacLineDetector {
 	private double distanceThreshold;
 	private int inlierThreshold;
 	private int numLines;
+	private int maxGap;
 
-	public RansacLineDetector(int maxIterations, double distanceThreshold, int inlierThreshold, int numLines) {
+	public RansacLineDetector(int maxIterations, double distanceThreshold, int inlierThreshold, int numLines, int maxGap) {
 		this.maxIterations = maxIterations;
 		this.distanceThreshold = distanceThreshold;
 		this.inlierThreshold = inlierThreshold;
 		this.numLines = numLines;
+		this.maxGap = maxGap;
 	}
 
 	public void detectLines(Mat image) {
@@ -69,23 +73,33 @@ public class RansacLineDetector {
 	            }
 	        }
 
-	        // Draw best line on image
+	     // Dibujar la mejor línea en la imagen
 	        if (bestLine != null) {
-	            double minX = Double.MAX_VALUE;
-	            double maxX = Double.MIN_VALUE;
-	            for (Point p : bestInlierPoints) {
-	                if (p.x < minX) {
-	                    minX = p.x;
-	                }
-	                if (p.x > maxX) {
-	                    maxX = p.x;
+	            // Ordenar los puntos inliers por coordenada x
+	            bestInlierPoints.sort(Comparator.comparingDouble(p -> p.x));
+
+	            // Encontrar grupos de puntos inliers consecutivos que están cerca uno del otro
+	            List<List<Point>> pointGroups = new ArrayList<>();
+	            List<Point> currentGroup = new ArrayList<>();
+	            for (int i = 0; i < bestInlierPoints.size(); i++) {
+	                Point p = bestInlierPoints.get(i);
+	                currentGroup.add(p);
+	                if (i == bestInlierPoints.size() - 1 || bestInlierPoints.get(i + 1).x - p.x > maxGap) {
+	                    pointGroups.add(currentGroup);
+	                    currentGroup = new ArrayList<>();
 	                }
 	            }
-	            Point start = new Point(minX, bestLine.getY(minX));
-	            Point end = new Point(maxX, bestLine.getY(maxX));
-	            Imgproc.line(image, start, end, new Scalar(0, 255, 0), 2);
 
-	            // Remove inliers from black pixels
+	            // Dibujar líneas entre cada grupo de puntos
+	            for (List<Point> group : pointGroups) {
+	                if (group.size() >= 2) {
+	                    Point start = group.get(0);
+	                    Point end = group.get(group.size() - 1);
+	                    Imgproc.line(image, start, end, new Scalar(0, 255, 0), 2);
+	                }
+	            }
+
+	            // Eliminar inliers de píxeles negros
 	            Iterator<Point> iterator = blackPixels.iterator();
 	            while (iterator.hasNext()) {
 	                Point p = iterator.next();
