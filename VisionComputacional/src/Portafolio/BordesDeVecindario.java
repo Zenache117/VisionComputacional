@@ -36,7 +36,10 @@ public class BordesDeVecindario {
 		    for (int i = 0; i < imagenBinarizada.rows(); i++) {
 		        for (int j = 0; j < imagenBinarizada.cols(); j++) {
 		            double[] value = imagenBinarizada.get(i, j);
-		            writer.write(String.valueOf(value[0]) + ",");
+		            writer.write(String.valueOf(value[0]));
+		            if (j < imagenBinarizada.cols() - 1) {
+		                writer.write(",");
+		            }
 		        }
 		        writer.write("\n");
 		    }

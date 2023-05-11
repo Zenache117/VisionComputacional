@@ -115,7 +115,24 @@ public class ProyeccionDeLineas {
 					if (group.size() >= 2) {
 						Point start = group.get(0);
 						Point end = group.get(group.size() - 1);
-						Imgproc.line(image, start, end, new Scalar(0, 255, 0), 2);
+						// Calcula la pendiente de la línea
+						double slope = (end.y - start.y) / (end.x - start.x);
+
+						// Calcula el intercepto en y
+						double yIntercept = start.y - slope * start.x;
+
+						// Dibuja la línea píxel por píxel
+						for (int x = (int) start.x; x <= end.x; x++) {
+						    int y = (int) (slope * x + yIntercept);
+						    double[] pixel = image.get(y, x);
+						    if (pixel[0] == 255 && pixel[1] == 255 && pixel[2] == 255) {
+						        // Si el píxel es blanco, detén el dibujo de la línea
+						        break;
+						    } else {
+						        // Si el píxel no es blanco, dibuja un píxel verde en esa posición
+						        image.put(y, x, new double[]{0, 255, 0});
+						    }
+						}
 					}
 				}
 
@@ -142,7 +159,7 @@ public class ProyeccionDeLineas {
 
 }
 
-class Line {
+ class Line {
 	private double a;
 	private double b;
 
