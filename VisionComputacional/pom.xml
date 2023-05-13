@@ -15,11 +15,6 @@
 			<version>1.5.3</version>
 		</dependency>
 
-		<dependency>
-			<groupId>com.github.User</groupId>
-			<artifactId>Repo</artifactId>
-			<version>Tag</version>
-		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/org.fxyz3d/fxyz3d -->
 		<dependency>

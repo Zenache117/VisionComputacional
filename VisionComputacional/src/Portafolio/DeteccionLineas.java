@@ -8,11 +8,11 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.opencv.core.Core;
+import org.opencv.core.CvType;
+
 import java.io.FileWriter;
-
-
-
-
+import org.opencv.core.Mat;
+import org.opencv.imgcodecs.Imgcodecs;
 
 public class DeteccionLineas {
 
@@ -54,7 +54,7 @@ public class DeteccionLineas {
 		    e.printStackTrace();
 		}
 		
-	
+		detec.mostrarImagenUmbral(16, accumulator, rutaCarpetaDestino);
 		
 
 		// -----------------------------------------------------------------------------------------------------------------------
@@ -62,6 +62,27 @@ public class DeteccionLineas {
 		System.out.println("");
 	}
 
+	public void mostrarImagenUmbral(int Umbral, int[][] accumulator, String rutaCarpetaDestino) {
+		// Crear una matriz en blanco y negro con las mismas dimensiones que el acumulador
+	    Mat imagen = new Mat(accumulator.length, accumulator[0].length, CvType.CV_8UC1);
+
+	    // Recorrer cada píxel de la imagen
+	    for (int x = 0; x < accumulator.length; x++) {
+	        for (int y = 0; y < accumulator[0].length; y++) {
+	            // Si el valor del acumulador en la posición (x,y) es mayor que el umbral
+	            if (accumulator[x][y] > Umbral) {
+	                // Dibujar el píxel en negro
+	                imagen.put(x, y, 0);
+	            }else {
+	            	imagen.put(x, y, 255);
+	            }
+	        }
+	    }
+
+	    // Guardar la imagen en un archivo
+	    Imgcodecs.imwrite(rutaCarpetaDestino+"/imagenFuncionDeUmbral.png", imagen);
+	}
+	
 	public int[][] houghTransform(List<List<Integer>> matBordes) {
 		int rows = matBordes.size();
 		int cols = matBordes.get(0).size();
