@@ -30,32 +30,31 @@ public class DeteccionLineas {
 
 		DeteccionLineas detec = new DeteccionLineas();
 		matBordes = detec.leerMatriz(rutaArchivo);
-		
+
 		int[][] accumulator = detec.houghTransform(matBordes);
 
 		// Seleccionar la carpeta destino para guardar la imagen transformada
 		CarpetaDestino carpetaDestino = new CarpetaDestino();
 		String rutaCarpetaDestino = carpetaDestino.selectCarpet();
 
-		//Guardar matriz de imagen copiada
+		// Guardar matriz de imagen copiada
 		try {
-		    FileWriter writer = new FileWriter(rutaCarpetaDestino + "/TransformadaHough.csv");
+			FileWriter writer = new FileWriter(rutaCarpetaDestino + "/TransformadaHough.csv");
 
-		    for (int i = 0; i < matBordes.size(); i++) {
-		        for (int j = 0; j < matBordes.get(0).size(); j++) {
-		            int value = accumulator[i][j];
-		            writer.write(String.valueOf(value) + ",");
-		        }
-		        writer.write("\n");
-		    }
+			for (int i = 0; i < matBordes.size(); i++) {
+				for (int j = 0; j < matBordes.get(0).size(); j++) {
+					int value = accumulator[i][j];
+					writer.write(String.valueOf(value) + ",");
+				}
+				writer.write("\n");
+			}
 
-		    writer.close();
+			writer.close();
 		} catch (IOException e) {
-		    e.printStackTrace();
+			e.printStackTrace();
 		}
-		
-		detec.mostrarImagenUmbral(16, accumulator, rutaCarpetaDestino);
-		
+
+		detec.mostrarImagenUmbral(80, accumulator, rutaCarpetaDestino);
 
 		// -----------------------------------------------------------------------------------------------------------------------
 
@@ -63,64 +62,73 @@ public class DeteccionLineas {
 	}
 
 	public void mostrarImagenUmbral(int Umbral, int[][] accumulator, String rutaCarpetaDestino) {
-		// Crear una matriz en blanco y negro con las mismas dimensiones que el acumulador
-	    Mat imagen = new Mat(accumulator.length, accumulator[0].length, CvType.CV_8UC1);
+		// Crear una matriz en blanco y negro con las mismas dimensiones que el
+		// acumulador
+		Mat imagen = new Mat(accumulator.length, accumulator[0].length, CvType.CV_8UC1);
 
-	    // Recorrer cada píxel de la imagen
-	    for (int x = 0; x < accumulator.length; x++) {
-	        for (int y = 0; y < accumulator[0].length; y++) {
-	            // Si el valor del acumulador en la posición (x,y) es mayor que el umbral
-	            if (accumulator[x][y] > Umbral) {
-	                // Dibujar el píxel en negro
-	                imagen.put(x, y, 0);
-	            }else {
-	            	imagen.put(x, y, 255);
-	            }
-	        }
-	    }
+		// Recorrer cada píxel de la imagen
+		for (int x = 0; x < accumulator.length; x++) {
+			for (int y = 0; y < accumulator[0].length; y++) {
+				// Si el valor del acumulador en la posición (x,y) es mayor que el umbral
+				if (accumulator[x][y] > Umbral) {
+					// Dibujar el píxel en negro
+					imagen.put(x, y, 0);
+				} else {
+					imagen.put(x, y, 255);
+				}
+			}
+		}
 
-	    // Guardar la imagen en un archivo
-	    Imgcodecs.imwrite(rutaCarpetaDestino+"/imagenFuncionDeUmbral.png", imagen);
+		// Guardar la imagen en un archivo
+		Imgcodecs.imwrite(rutaCarpetaDestino + "/imagenFuncionDeUmbral.png", imagen);
 	}
-	
+
 	public int[][] houghTransform(List<List<Integer>> matBordes) {
 		int rows = matBordes.size();
 		int cols = matBordes.get(0).size();
-		int[][] votingSpace = new int[rows][cols];
+		int[][] votes = new int[rows][cols];
+		double angleTolerance = 80.0; // Angle tolerance in degrees
 
 		for (int i = 0; i < rows; i++) {
 			for (int j = 0; j < cols; j++) {
-				if (matBordes.get(i).get(j) == 0) { // pixel borde
-					votingSpace[i][j]++;
-					// verificar píxeles adyacentes
-					for (int x = -1; x <= 1; x++) {
-						for (int y = -1; y <= 1; y++) {
-							if (x == 0 && y == 0)
-								continue;
-							int newX = i + x;
-							int newY = j + y;
-							if (newX >= 0 && newX < rows && newY >= 0 && newY < cols
-									&& matBordes.get(newX).get(newY) == 0) {
-								votingSpace[newX][newY]++;
-								// verificar píxeles consecutivos en la misma dirección
-								int nextX = newX + x;
-								int nextY = newY + y;
-								while (nextX >= 0 && nextX < rows && nextY >= 0 && nextY < cols
-										&& matBordes.get(nextX).get(nextY) == 0) {
-									votingSpace[nextX][nextY]++;
-									nextX += x;
-									nextY += y;
-								}
-							}
+				if (matBordes.get(i).get(j) == 0) {
+					// Check horizontal line
+					for (int k = j + 1; k < cols && matBordes.get(i).get(k) == 0; k++) {
+						votes[i][j]++;
+						votes[i][k]++;
+					}
+					// Check vertical line
+					for (int k = i + 1; k < rows && matBordes.get(k).get(j) == 0; k++) {
+						votes[i][j]++;
+						votes[k][j]++;
+					}
+					// Check diagonal line (left to right)u
+					double initialAngle = Math.atan2(1, 1) * 180 / Math.PI;
+					for (int k = 1; i + k < rows && j + k < cols && matBordes.get(i + k).get(j + k) == 0; k++) {
+						double angle = Math.atan2(k, k) * 180 / Math.PI;
+						if (Math.abs(angle - initialAngle) <= angleTolerance) {
+							votes[i][j]++;
+							votes[i + k][j + k]++;
+						}
+					}
+					// Check diagonal line (right to left)
+					initialAngle = Math.atan2(1, -1) * 180 / Math.PI;
+					for (int k = 1; i + k < rows && j - k >= 0 && matBordes.get(i + k).get(j - k) == 0; k++) {
+						double angle = Math.atan2(k, -k) * 180 / Math.PI;
+						if (Math.abs(angle - initialAngle) <= angleTolerance) {
+							votes[i][j]++;
+							votes[i + k][j - k]++;
 						}
 					}
 				}
 			}
 		}
 
-		return votingSpace;
+		return votes;
 	}
 
+	
+	
 	public List<List<Integer>> leerMatriz(String rutaArchivo) {
 		List<List<Integer>> matBordes = new ArrayList<>();
 		try (FileReader fileReader = new FileReader(rutaArchivo);
