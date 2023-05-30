@@ -16,7 +16,8 @@ La biblioteca OpenCV se carga en el programa.
 
 La imagen seleccionada se lee y se almacena en una matriz.
 
-A continuación, el programa convierte la imagen a escala de grises. Esto se logra creando una nueva Mat de tipo CV_8U con las mismas dimensiones que la imagen original y, a través de un bucle anidado que recorre cada píxel 
+A continuación, el programa convierte la imagen a escala de grises. 
+Esto se logra creando una nueva Mat de tipo CV_8U con las mismas dimensiones que la imagen original y, a través de un bucle anidado que recorre cada píxel 
 de la imagen, se aplica la siguiente fórmula para obtener el valor de gris de cada píxel:
 grayValue = 0.299 * pixel[2] + 0.587 * pixel[1] + 0.114 * pixel[0]
 Donde pixel[0], pixel[1] y pixel[2] representan los valores de cada componente de color (azul, verde y rojo) del píxel actual.
@@ -66,7 +67,6 @@ public class Principal {
 			}
 		}
 
-		// Aplicar k-means para segmentacion previa manualmente
 		Mat reshaped = new Mat(gray.rows() * gray.cols(), 1, CvType.CV_32FC1);
 		for (int row = 0; row < gray.rows(); row++) {
 			for (int col = 0; col < gray.cols(); col++) {
@@ -75,17 +75,71 @@ public class Principal {
 			}
 		}
 
+		// N�mero de grupos
+		int K = 2;
+		// N�mero m�ximo de iteraciones
+		int maxIterations = 10;
+		// Tolerancia para determinar si los centroides han cambiado
+		double tolerance = 1e-4;
+
+		// Inicializar los centroides aleatoriamente
+		Mat centers = new Mat(K, 1, CvType.CV_32FC1);
+		for (int i = 0; i < K; i++) {
+		    int randomIndex = (int) (Math.random() * reshaped.rows());
+		    centers.put(i, 0, reshaped.get(randomIndex, 0));
+		}
+
+		// Asignar etiquetas y actualizar centroides
 		Mat labels = new Mat(reshaped.rows(), 1, CvType.CV_32SC1);
-		Mat centers = new Mat(2, 1, CvType.CV_32FC1);
-		Core.kmeans(reshaped, 2, labels, new TermCriteria(TermCriteria.MAX_ITER + TermCriteria.EPS, 10, 1.0), 1,
-				Core.KMEANS_PP_CENTERS, centers);
+		for (int iteration = 0; iteration < maxIterations; iteration++) {
+		    // Asignar etiquetas
+		    for (int i = 0; i < reshaped.rows(); i++) {
+		        double minDistance = Double.MAX_VALUE;
+		        int minIndex = -1;
+		        for (int j = 0; j < K; j++) {
+		            double distance = Math.abs(reshaped.get(i, 0)[0] - centers.get(j, 0)[0]);
+		            if (distance < minDistance) {
+		                minDistance = distance;
+		                minIndex = j;
+		            }
+		        }
+		        labels.put(i, 0, minIndex);
+		    }
+
+		    // Actualizar centroides
+		    boolean changed = false;
+		    for (int i = 0; i < K; i++) {
+		        double sum = 0;
+		        int count = 0;
+		        for (int j = 0; j < labels.rows(); j++) {
+		            if ((int) labels.get(j, 0)[0] == i) {
+		                sum += reshaped.get(j, 0)[0];
+		                count++;
+		            }
+		        }
+		        if (count > 0) {
+		            double newCenter = sum / count;
+		            if (Math.abs(newCenter - centers.get(i, 0)[0]) > tolerance) {
+		                changed = true;
+		            }
+		            centers.put(i, 0, newCenter);
+		        }
+		    }
+
+		    // Si los centroides no han cambiado, detener las iteraciones
+		    if (!changed) {
+		        break;
+		    }
+		}
+
+		// Crear imagen segmentada
 		Mat segmented = new Mat(gray.size(), CvType.CV_8UC1);
 		for (int row = 0; row < gray.rows(); row++) {
-			for (int col = 0; col < gray.cols(); col++) {
-				int label = (int) labels.get(row * gray.cols() + col, 0)[0];
-				double[] center = centers.get(label, 0);
-				segmented.put(row, col, center);
-			}
+		    for (int col = 0; col < gray.cols(); col++) {
+		        int label = (int) labels.get(row * gray.cols() + col, 0)[0];
+		        double[] center = centers.get(label, 0);
+		        segmented.put(row, col, center);
+		    }
 		}
 
 		// Calcular histograma de la imagen segmentada
