@@ -25,15 +25,8 @@ de la imagen, se aplica la siguiente f√≥rmula para obtener el valor de gris de c
 grayValue = 0.299 * pixel[2] + 0.587 * pixel[1] + 0.114 * pixel[0]
 Donde pixel[0], pixel[1] y pixel[2] representan los valores de cada componente de color (azul, verde y rojo) del p√≠xel actual.
 
-El siguiente paso es aplicar un algoritmo de segmentaci√≥n previa para separar los objetos de la imagen en dos grupos. El m√©todo utilizado para esta tarea es K-means, el cual se aplica a una versi√≥n "aplanada" de la imagen en escala 
-de grises. Primero, se recorre la imagen y se almacena cada valor de p√≠xel en una nueva Mat llamada "reshaped". Luego se aplica k-means. 
-(en este caso, 2), una matriz para almacenar las etiquetas de cada p√≠xel y otra matriz para almacenar los centros de cada grupo. La funci√≥n kmeans devuelve los centros de los grupos, que se usan para crear una nueva imagen segmentada, 
-donde cada p√≠xel se asigna al centro de su respectivo grupo.
-
-El programa calcula un histograma de la imagen segmentada para su posterior an√°lisis. El histograma se almacena en una matriz de tipo CV_64F.
-
 Luego, se aplica un m√©todo de umbralizaci√≥n llamado "Niblack" para binarizar la imagen. Este m√©todo utiliza una ventana de p√≠xeles en cada p√≠xel de la imagen para calcular el umbral local. El umbral local se calcula como la media de la 
-ventana menos un factor multiplicado por la desviaci√≥n est√°ndar de la ventana. El factor utilizado es -0.2. Los p√≠xeles con un valor superior al umbral se asignan a 255 (blanco) y los p√≠xeles con un valor inferior se asignan a 0 (negro). 
+ventana menos un factor multiplicado por la desviaci√≥n est√°ndar de la ventana. El factor utilizado es -0.2 ("k" establecido por el documento del PIA). Los p√≠xeles con un valor superior al umbral se asignan a 255 (blanco) y los p√≠xeles con un valor inferior se asignan a 0 (negro). 
 El resultado se almacena en una matriz llamada "thresholdNiblack".
 
 Adem√°s del m√©todo Niblack, el programa tambi√©n aplica el m√©todo Sauvola para binarizar la imagen. El m√©todo Sauvola es similar al m√©todo Niblack, pero utiliza un factor adaptativo basado en el contraste local y la desviaci√≥n est√°ndar de 
@@ -60,7 +53,7 @@ public class Principal {
 		// Leer la imagen seleccionada
 		Mat image = Imgcodecs.imread(rutaImagen);
 
-		// Convertir a escala de grises manualmente
+		// Convertir a escala de grises
 		Mat gray = new Mat(image.rows(), image.cols(), CvType.CV_8U);
 		for (int row = 0; row < image.rows(); row++) {
 			for (int col = 0; col < image.cols(); col++) {
@@ -70,11 +63,13 @@ public class Principal {
 			}
 		}
 
-		// Calcular umbral de Niblack
+		// ---------------------------------------------------------------------------------------------------------
+
+		// Calcular umbral de Niblack manualmente
 		Mat thresholdNiblack = new Mat(gray.size(), CvType.CV_8UC1);
 		for (int row = 0; row < gray.rows(); row++) {
 			for (int col = 0; col < gray.cols(); col++) {
-				// Calcular la media y la desviaciÔøΩn estÔøΩndar de la ventana
+				// Calcular la media y la desviacion estandar de la ventana
 				int windowSize = 15;
 				int windowOffset = windowSize / 2;
 				double sum = 0;
@@ -94,6 +89,10 @@ public class Principal {
 
 				// Calcular el umbral de Niblack
 				double k = -0.2;
+				/////
+				/////
+				/////
+				/// FORMULA NIBLACK
 				double thresholdValue = mean + (k * stdDev);
 				double pixelValue = gray.get(row, col)[0];
 				if (pixelValue > thresholdValue) {
@@ -105,7 +104,11 @@ public class Principal {
 		}
 		System.out.println("Umbral de Niblack: " + Core.mean(thresholdNiblack).val[0]);
 
-		// Calcular el MSE
+		// Calcular el MSE (error cuadr·tico medio)
+		/*
+		 * El MSE se calcula como el promedio de los cuadrados de las diferencias entre
+		 * los valores de pÌxeles correspondientes de las dos im·genes.
+		 */
 		double mse = 0;
 		for (int i = 0; i < gray.rows(); i++) {
 			for (int j = 0; j < gray.cols(); j++) {
@@ -117,12 +120,29 @@ public class Principal {
 		}
 		mse /= gray.rows() * gray.cols();
 
-		// Calcular el PSNR
+		/*
+		 * PSNR (RelaciÛn SeÒal-Ruido de Pico, por sus siglas en inglÈs) es una medida
+		 * de la calidad de la reconstrucciÛn de im·genes que han sido comprimidas. Se
+		 * calcula comparando la imagen original con la imagen reconstruida y se mide la
+		 * cantidad de ruido introducido durante el proceso de compresiÛn. Un valor m·s
+		 * alto de PSNR indica una mejor calidad de la imagen reconstruida.
+		 * 
+		 * PSNR se calcula utilizando el error cuadr·tico medio (MSE, por sus siglas en
+		 * inglÈs) entre la imagen original y la imagen reconstruida. Una vez que se ha
+		 * calculado el MSE, se puede calcular el PSNR (en dB) utilizando la fÛrmula:
+		 * PSNR = 20 * log10(MAX / sqrt(MSE)), donde MAX es el valor m·ximo posible del
+		 * pÌxel en la imagen (255) y sqrt(MSE) es la raÌz cuadrada del MSE 1.
+		 */
+
+		// Calcular el PSNR - (Entre mas alto es este valor mejor fue la reconstrucciÛn
+		// de la imagen)
 		double psnr_Niblack = 20 * Math.log10(255.0 / Math.sqrt(mse));
 
 		System.out.println("PSNR_Niblack: " + psnr_Niblack);
 
-		// Aplicar tecnica Sauvola
+		// ---------------------------------------------------------------------------------------------------------
+
+		// Aplicar tecnica Sauvola manualmente
 		Mat sauvola = new Mat(gray.rows(), gray.cols(), CvType.CV_8UC1);
 		int windowSize = 25;
 		// Mismo valor de K utilizado en el articulo
@@ -146,7 +166,11 @@ public class Principal {
 				}
 				double mean = sum / count;
 				double variance = (sumSquared - Math.pow(sum, 2) / count) / count;
-				double thresholdValue = mean * (1 + k * (Math.sqrt(variance / 128) - 1));
+
+				//// FORMULA SAUVOLA
+				// double thresholdValue = mean * (1 + k * (Math.sqrt(variance / 128) - 1));
+				double desv = Math.sqrt(variance);
+				double thresholdValue = mean * (1 - k * (1 - (desv / 128)));
 				if (pixel[0] > thresholdValue) {
 					sauvola.put(row, col, 255);
 				} else {
@@ -173,6 +197,8 @@ public class Principal {
 
 		System.out.println("PSNR_Sauvola: " + psnr_Sauvola);
 
+		// ---------------------------------------------------------------------------------------------------------
+
 		// Seleccionar la carpeta destino para guardar la imagen transformada
 		CarpetaDestino carpetaDestino = new CarpetaDestino();
 
@@ -181,9 +207,43 @@ public class Principal {
 		Imgcodecs.imwrite(rutaCarpetaDestino + "/ResultadoSauvola.jpg", sauvola);
 		Imgcodecs.imwrite(rutaCarpetaDestino + "/ResultadoNiblack.jpg", thresholdNiblack);
 
+		// Calcular el Coeficiente de Jaccard para comparar las im·genes resultantes
+		double jaccardSauvola = jaccard(gray, sauvola);
+		double jaccardNiblack = jaccard(gray, thresholdNiblack);
+
+		int[] histogramSauvola = new int[256];
+		for (int i = 0; i < sauvola.rows(); i++) {
+			for (int j = 0; j < sauvola.cols(); j++) {
+				int value = (int) sauvola.get(i, j)[0];
+				histogramSauvola[value]++;
+			}
+		}
+
+		int[] histogramNiblack = new int[256];
+		for (int i = 0; i < thresholdNiblack.rows(); i++) {
+			for (int j = 0; j < thresholdNiblack.cols(); j++) {
+				int value = (int) thresholdNiblack.get(i, j)[0];
+				histogramNiblack[value]++;
+			}
+		}
+
+		try {
+			FileWriter writer = new FileWriter(rutaCarpetaDestino + "/Histograma_Jaccard_PSNR.csv");
+			writer.write("0,255,Jaccard,PSNR");
+			writer.write("\n");
+			writer.write(String.valueOf(histogramSauvola[0] + "," + String.valueOf(histogramSauvola[255]) + ","
+					+ jaccardSauvola + "," + psnr_Sauvola + ",Sauvola"));
+			writer.write("\n");
+			writer.write(String.valueOf(histogramNiblack[0] + "," + String.valueOf(histogramNiblack[255]) + ","
+					+ jaccardNiblack + "," + psnr_Niblack + ",Niblack"));
+			writer.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
 		// Guardar matriz de imagen Sauvola
 		try {
-			FileWriter writer = new FileWriter(rutaCarpetaDestino + "/ImagenMatrizBordesBinarizados.csv");
+			FileWriter writer = new FileWriter(rutaCarpetaDestino + "/matrizImagenSauola.csv");
 
 			for (int i = 0; i < sauvola.rows(); i++) {
 				for (int j = 0; j < sauvola.cols(); j++) {
@@ -201,9 +261,9 @@ public class Principal {
 			e.printStackTrace();
 		}
 
-		// Guardar matriz de imagen Bordes
+		// Guardar matriz de imagen Niblack
 		try {
-			FileWriter writer = new FileWriter(rutaCarpetaDestino + "/ImagenMatrizBordesBinarizados.csv");
+			FileWriter writer = new FileWriter(rutaCarpetaDestino + "/matrizImagenNiblack.csv");
 
 			for (int i = 0; i < thresholdNiblack.rows(); i++) {
 				for (int j = 0; j < thresholdNiblack.cols(); j++) {
@@ -221,5 +281,33 @@ public class Principal {
 			e.printStackTrace();
 		}
 
+	}
+
+	// Calculo de similitud mediante jaccard (el maximo valor de similitud es 1 y el
+	// minimo es 0) la relaciÛn de jaccard sse basa en revisar la cantidad total de
+	// pixeles de un tipo y ver cuales de esos pixeles se intersectan entre si, una
+	// vez se obtienen esos valores, se dividen las intersecciones entre los pixeles
+	// encontrados y ese ess su nivel de relaciÛn
+	public static double jaccard(Mat img1, Mat img2) {
+		int intersection = 0;
+		int union = 0;
+
+		for (int row = 0; row < img1.rows(); row++) {
+			for (int col = 0; col < img1.cols(); col++) {
+				double[] pixel1 = img1.get(row, col);
+				double[] pixel2 = img2.get(row, col);
+
+				if (pixel1[0] == 0 && pixel2[0] == 0) {
+					intersection++;
+					union++;
+				} else if (pixel1[0] == 0 || pixel2[0] == 0) {
+					union++;
+				}
+			}
+		}
+
+		double div = (double) intersection / (double) union;
+
+		return div;
 	}
 }
