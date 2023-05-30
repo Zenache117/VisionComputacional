@@ -3,6 +3,7 @@ package Portafolio;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -12,7 +13,10 @@ import org.opencv.core.CvType;
 
 import java.io.FileWriter;
 import org.opencv.core.Mat;
+import org.opencv.core.Point;
+import org.opencv.core.Scalar;
 import org.opencv.imgcodecs.Imgcodecs;
+import org.opencv.imgproc.Imgproc;
 
 public class DeteccionLineas {
 
@@ -31,104 +35,260 @@ public class DeteccionLineas {
 		DeteccionLineas detec = new DeteccionLineas();
 		matBordes = detec.leerMatriz(rutaArchivo);
 
-		int[][] accumulator = detec.houghTransform(matBordes);
+		int width = matBordes.get(0).size();
+		int height = matBordes.size();
+		int maxRho = (int) Math.sqrt(width * width + height * height);
+		int rhoRange = maxRho * 2;
+		int thetaRange = 180;
+		int[][] accumulator = new int[rhoRange][thetaRange];
+
+		for (int y = 0; y < height; y++) {
+			for (int x = 0; x < width; x++) {
+				if (matBordes.get(y).get(x) == 255)
+					continue;
+				for (int theta = 0; theta < thetaRange; theta++) {
+					double rad = Math.toRadians(theta);
+					int rho = (int) (x * Math.cos(rad) + y * Math.sin(rad)) + maxRho;
+					accumulator[rho][theta]++;
+				}
+			}
+		}
+
+		int threshold = 100;
+		List<int[]> peaks = new ArrayList<>();
+		for (int rhoIndex = 0; rhoIndex < rhoRange; rhoIndex++) {
+			for (int thetaIndex = 0; thetaIndex < thetaRange; thetaIndex++) {
+				if (accumulator[rhoIndex][thetaIndex] > threshold) {
+					peaks.add(new int[] { rhoIndex, thetaIndex });
+				}
+			}
+		}
+
+		Mat image = Mat.zeros(height, width, CvType.CV_8UC3);
+		image.setTo(new Scalar(255, 255, 255));
+		for (int[] peak : peaks) {
+			int rhoIndex = peak[0];
+			int thetaIndex = peak[1];
+			int rho = rhoIndex - maxRho;
+			double theta = Math.toRadians(thetaIndex);
+			double cosTheta = Math.cos(theta);
+			double sinTheta = Math.sin(theta);
+			double x0 = cosTheta * rho;
+			double y0 = sinTheta * rho;
+			int[] pt1 = new int[] { (int) Math.round(x0 + 1000 * (-sinTheta)), (int) Math.round(y0 + 1000 * cosTheta) };
+			int[] pt2 = new int[] { (int) Math.round(x0 - 1000 * (-sinTheta)), (int) Math.round(y0 - 1000 * cosTheta) };
+			Imgproc.line(image, new Point(pt1[0], pt1[1]), new Point(pt2[0], pt2[1]), new Scalar(0, 0, 0), 1);
+		}
+
+		// Tranforma la imagen a lista
+		List<List<Integer>> imageList = new ArrayList<>();
+		for (int y = 0; y < image.rows(); y++) {
+			List<Integer> row = new ArrayList<>();
+			for (int x = 0; x < image.cols(); x++) {
+				double[] pixel = image.get(y, x);
+				int value = (int) pixel[0];
+				row.add(value);
+			}
+			imageList.add(row);
+		}
+
+		// Se dibujan las lineas solo en donde el pixel tiene valor 0 en la imagen de
+		// los bordes para evitar que se proyecten lineas fuera de estos
+		List<List<Integer>> result = new ArrayList<>();
+		for (int y = 0; y < height; y++) {
+			List<Integer> row = new ArrayList<>();
+			for (int x = 0; x < width; x++) {
+				int value1 = matBordes.get(y).get(x);
+				int value2 = imageList.get(y).get(x);
+				int value;
+				if (value1 == 0 && value2 == 0) {
+					value = 0;
+				} else {
+					value = 255;
+				}
+				row.add(value);
+			}
+			result.add(row);
+		}
+
+		// Se genera una imagen resultado para Hough
+		Mat resultImage = Mat.zeros(height, width, CvType.CV_8UC1);
+		for (int y = 0; y < height; y++) {
+			for (int x = 0; x < width; x++) {
+				int value = result.get(y).get(x);
+				resultImage.put(y, x, value);
+			}
+		}
 
 		// Seleccionar la carpeta destino para guardar la imagen transformada
 		CarpetaDestino carpetaDestino = new CarpetaDestino();
 		String rutaCarpetaDestino = carpetaDestino.selectCarpet();
 
-		// Guardar matriz de imagen copiada
-		try {
-			FileWriter writer = new FileWriter(rutaCarpetaDestino + "/TransformadaHough.csv");
+		Imgcodecs.imwrite(rutaCarpetaDestino + "/imagenTransformadaHough.png", image);
+		Imgcodecs.imwrite(rutaCarpetaDestino + "/imagenFuncionDeUmbral.png", resultImage);
 
-			for (int i = 0; i < matBordes.size(); i++) {
-				for (int j = 0; j < matBordes.get(0).size(); j++) {
-					int value = accumulator[i][j];
-					writer.write(String.valueOf(value) + ",");
+		// Guardar matriz de imagenFunción umbral
+		FileWriter writer;
+		try {
+			writer = new FileWriter(rutaCarpetaDestino + "/matrizImagenFuncionUmbral.csv");
+
+			for (int i = 0; i < resultImage.rows(); i++) {
+				for (int j = 0; j < resultImage.cols(); j++) {
+					double[] value = resultImage.get(i, j);
+					writer.write(String.valueOf(value[0]) + ",");
 				}
 				writer.write("\n");
 			}
 
 			writer.close();
+
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 
-		detec.mostrarImagenUmbral(80, accumulator, rutaCarpetaDestino);
-
 		// -----------------------------------------------------------------------------------------------------------------------
 
-		System.out.println("");
-	}
+		// Parámetros del algoritmo RANSAC
+		int numIterations = 1000;
+		double threshold2 = 2.0;
+		int minNumInliers = 100;
+		int numLines = 11;
 
-	public void mostrarImagenUmbral(int Umbral, int[][] accumulator, String rutaCarpetaDestino) {
-		// Crear una matriz en blanco y negro con las mismas dimensiones que el
-		// acumulador
-		Mat imagen = new Mat(accumulator.length, accumulator[0].length, CvType.CV_8UC1);
+		// Lista de puntos de borde
+		List<Point> edgePoints = new ArrayList<Point>();
+		for (int y = 0; y < resultImage.rows(); y++) {
+			for (int x = 0; x < resultImage.cols(); x++) {
+				double[] pixel = resultImage.get(y, x);
+				if (pixel[0] == 0) {
+					edgePoints.add(new Point(x, y));
+				}
+			}
+		}
 
-		// Recorrer cada píxel de la imagen
-		for (int x = 0; x < accumulator.length; x++) {
-			for (int y = 0; y < accumulator[0].length; y++) {
-				// Si el valor del acumulador en la posición (x,y) es mayor que el umbral
-				if (accumulator[x][y] > Umbral) {
-					// Dibujar el píxel en negro
-					imagen.put(x, y, 0);
+		// Crear una nueva imagen de las mismas dimensiones que resultImage
+		Mat newImage = Mat.zeros(resultImage.rows(), resultImage.cols(), CvType.CV_8UC1);
+		newImage.setTo(new Scalar(255, 255, 255));
+
+		// Algoritmo RANSAC para detectar múltiples líneas
+		for (int l = 0; l < numLines; l++) {
+			// Mejor modelo encontrado hasta el momento
+			double bestM = 0.0;
+			double bestB = 0.0;
+			int bestNumInliers = 0;
+			List<Point> bestInliers = new ArrayList<Point>();
+
+			for (int i = 0; i < numIterations; i++) {
+				// Seleccionar dos puntos aleatorios
+				Point p1 = edgePoints.get((int) (Math.random() * edgePoints.size()));
+				Point p2 = edgePoints.get((int) (Math.random() * edgePoints.size()));
+
+				// Ajustar el modelo a los puntos seleccionados
+				double m = (p2.y - p1.y) / (p2.x - p1.x);
+				double b = p1.y - m * p1.x;
+
+				// Contar el número de inliers
+				int numInliers = 0;
+				List<Point> inliers = new ArrayList<Point>();
+				for (Point p : edgePoints) {
+					double distance = Math.abs(m * p.x - p.y + b) / Math.sqrt(m * m + 1);
+					if (distance < threshold2) {
+						numInliers++;
+						inliers.add(p);
+					}
+				}
+
+				// Actualizar el mejor modelo encontrado hasta el momento
+				if (numInliers > bestNumInliers && numInliers > minNumInliers) {
+					bestM = m;
+					bestB = b;
+					bestNumInliers = numInliers;
+					bestInliers = inliers;
+				}
+			}
+
+			// Dibujar la línea encontrada en la nueva imagen
+			Point pt1 = new Point(0, bestB);
+			Point pt2 = new Point(resultImage.cols(), bestM * resultImage.cols() + bestB);
+			Imgproc.line(newImage, pt1, pt2, new Scalar(0, 0, 0), 3);
+
+			// Eliminar los inliers encontrados
+			edgePoints.removeAll(bestInliers);
+		}
+
+		// Tranforma la imagen a lista
+		List<List<Integer>> RANSACImageList = new ArrayList<>();
+		for (int y = 0; y < newImage.rows(); y++) {
+			List<Integer> row = new ArrayList<>();
+			for (int x = 0; x < newImage.cols(); x++) {
+				double[] pixel = newImage.get(y, x);
+				int value = (int) pixel[0];
+				row.add(value);
+			}
+			RANSACImageList.add(row);
+		}
+
+		// Tranforma la imagen a lista
+		List<List<Integer>> HoughImageList = new ArrayList<>();
+		for (int y = 0; y < resultImage.rows(); y++) {
+			List<Integer> row = new ArrayList<>();
+			for (int x = 0; x < resultImage.cols(); x++) {
+				double[] pixel = resultImage.get(y, x);
+				int value = (int) pixel[0];
+				row.add(value);
+			}
+			HoughImageList.add(row);
+		}
+
+		// Se dibujan las lineas solo en donde el pixel tiene valor 0 en la imagen de
+		// los bordes para evitar que se proyecten lineas fuera de estos
+		List<List<Integer>> resultRANSAC = new ArrayList<>();
+		for (int y = 0; y < height; y++) {
+			List<Integer> row = new ArrayList<>();
+			for (int x = 0; x < width; x++) {
+				int value1 = HoughImageList.get(y).get(x);
+				int value2 = RANSACImageList.get(y).get(x);
+				int value;
+				if (value1 == 0 && value2 == 0) {
+					value = 0;
 				} else {
-					imagen.put(x, y, 255);
+					value = 255;
 				}
+				row.add(value);
+			}
+			resultRANSAC.add(row);
+		}
+
+		// Se genera una imagen resultado para RANSAC
+		Mat resultRANSACImage = Mat.zeros(height, width, CvType.CV_8UC1);
+		for (int y = 0; y < height; y++) {
+			for (int x = 0; x < width; x++) {
+				int value = resultRANSAC.get(y).get(x);
+				resultRANSACImage.put(y, x, value);
 			}
 		}
 
-		// Guardar la imagen en un archivo
-		Imgcodecs.imwrite(rutaCarpetaDestino + "/imagenFuncionDeUmbral.png", imagen);
-	}
+		Imgcodecs.imwrite(rutaCarpetaDestino + "/imagenRANSAC.png", newImage);
+		Imgcodecs.imwrite(rutaCarpetaDestino + "/imagenRANSACajustada.png", resultRANSACImage);
 
-	public int[][] houghTransform(List<List<Integer>> matBordes) {
-		int rows = matBordes.size();
-		int cols = matBordes.get(0).size();
-		int[][] votes = new int[rows][cols];
-		double angleTolerance = 80.0; // Angle tolerance in degrees
+		// Guardar matriz de imagenFunción umbral
+		try {
+			writer = new FileWriter(rutaCarpetaDestino + "/matrizImagenRANSAC.csv");
 
-		for (int i = 0; i < rows; i++) {
-			for (int j = 0; j < cols; j++) {
-				if (matBordes.get(i).get(j) == 0) {
-					// Check horizontal line
-					for (int k = j + 1; k < cols && matBordes.get(i).get(k) == 0; k++) {
-						votes[i][j]++;
-						votes[i][k]++;
-					}
-					// Check vertical line
-					for (int k = i + 1; k < rows && matBordes.get(k).get(j) == 0; k++) {
-						votes[i][j]++;
-						votes[k][j]++;
-					}
-					// Check diagonal line (left to right)u
-					double initialAngle = Math.atan2(1, 1) * 180 / Math.PI;
-					for (int k = 1; i + k < rows && j + k < cols && matBordes.get(i + k).get(j + k) == 0; k++) {
-						double angle = Math.atan2(k, k) * 180 / Math.PI;
-						if (Math.abs(angle - initialAngle) <= angleTolerance) {
-							votes[i][j]++;
-							votes[i + k][j + k]++;
-						}
-					}
-					// Check diagonal line (right to left)
-					initialAngle = Math.atan2(1, -1) * 180 / Math.PI;
-					for (int k = 1; i + k < rows && j - k >= 0 && matBordes.get(i + k).get(j - k) == 0; k++) {
-						double angle = Math.atan2(k, -k) * 180 / Math.PI;
-						if (Math.abs(angle - initialAngle) <= angleTolerance) {
-							votes[i][j]++;
-							votes[i + k][j - k]++;
-						}
-					}
+			for (int i = 0; i < resultImage.rows(); i++) {
+				for (int j = 0; j < resultImage.cols(); j++) {
+					double[] value = resultImage.get(i, j);
+					writer.write(String.valueOf(value[0]) + ",");
 				}
+				writer.write("\n");
 			}
-		}
 
-		return votes;
+			writer.close();
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
-	
-	
 	public List<List<Integer>> leerMatriz(String rutaArchivo) {
 		List<List<Integer>> matBordes = new ArrayList<>();
 		try (FileReader fileReader = new FileReader(rutaArchivo);
