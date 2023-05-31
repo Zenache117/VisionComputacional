@@ -3,6 +3,8 @@ package PIA;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import javax.swing.JOptionPane;
+
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
@@ -65,6 +67,15 @@ public class Principal {
 
 		// ---------------------------------------------------------------------------------------------------------
 
+		// Calcular el umbral de Niblack
+		double kniblack = 2.0;
+		while (kniblack < 0.0 || kniblack > 1.0) {
+			kniblack = Double.parseDouble(JOptionPane.showInputDialog("Valor de k para calculo de umbral de niblack"));
+			if (kniblack < 0.0 || kniblack > 1.0) {
+				JOptionPane.showMessageDialog(null, "El valor de k debe estar entre 0.0 y 1.0");
+			}
+		}
+
 		// Calcular umbral de Niblack manualmente
 		Mat thresholdNiblack = new Mat(gray.size(), CvType.CV_8UC1);
 		for (int row = 0; row < gray.rows(); row++) {
@@ -87,13 +98,11 @@ public class Principal {
 				double mean = sum / windowSizeDouble;
 				double stdDev = Math.sqrt((sumSquared / windowSizeDouble) - (mean * mean));
 
-				// Calcular el umbral de Niblack
-				double k = -0.2;
 				/////
 				/////
 				/////
 				/// FORMULA NIBLACK
-				double thresholdValue = mean + (k * stdDev);
+				double thresholdValue = mean + (kniblack * stdDev);
 				double pixelValue = gray.get(row, col)[0];
 				if (pixelValue > thresholdValue) {
 					thresholdNiblack.put(row, col, 255);
@@ -146,7 +155,13 @@ public class Principal {
 		Mat sauvola = new Mat(gray.rows(), gray.cols(), CvType.CV_8UC1);
 		int windowSize = 25;
 		// Mismo valor de K utilizado en el articulo
-		double k = 0.5;
+		double ksauvola = 2.0;
+		while (ksauvola < 0.0 || ksauvola > 1.0) {
+			ksauvola = Double.parseDouble(JOptionPane.showInputDialog("Valor de k para calculo de umbral de sauvola"));
+			if (kniblack < 0.0 || kniblack > 1.0) {
+				JOptionPane.showMessageDialog(null, "El valor de k debe estar entre 0.0 y 1.0");
+			}
+		}
 		for (int row = 0; row < gray.rows(); row++) {
 			for (int col = 0; col < gray.cols(); col++) {
 				double[] pixel = gray.get(row, col);
@@ -170,7 +185,7 @@ public class Principal {
 				//// FORMULA SAUVOLA
 				// double thresholdValue = mean * (1 + k * (Math.sqrt(variance / 128) - 1));
 				double desv = Math.sqrt(variance);
-				double thresholdValue = mean * (1 - k * (1 - (desv / 128)));
+				double thresholdValue = mean * (1 - ksauvola * (1 - (desv / 128)));
 				if (pixel[0] > thresholdValue) {
 					sauvola.put(row, col, 255);
 				} else {
