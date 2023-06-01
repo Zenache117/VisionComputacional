@@ -8,10 +8,8 @@ import javax.swing.JOptionPane;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
-import org.opencv.core.TermCriteria;
 import org.opencv.imgcodecs.Imgcodecs;
-import Portafolio.CarpetaDestino;
-import Portafolio.SeleccionarArchivo;
+
 
 /*Este programa procesa una imagen seleccionada por el usuario aplicando dos métodos de umbralización diferentes: Sauvola y Niblack. A continuación, se detallan los pasos que sigue el programa para procesar la imagen:
  * 
