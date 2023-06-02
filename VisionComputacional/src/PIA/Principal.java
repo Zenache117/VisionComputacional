@@ -253,8 +253,8 @@ public class Principal {
 
 		int posicion = 0;
 		for (Mat imagen : imageNiblack) {
-			Imgcodecs.imwrite(rutaCarpetaDestino + "/ResultadoNiblack" + posicion + ".jpg", imagen);
 			posicion++;
+			Imgcodecs.imwrite(rutaCarpetaDestino + "/ResultadoNiblack" + posicion + ".jpg", imagen);
 		}
 		posicion = 0;
 		for (Mat imagen : imageSauvola) {
