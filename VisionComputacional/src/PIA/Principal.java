@@ -58,7 +58,7 @@ public class Principal {
 		for (int row = 0; row < image.rows(); row++) {
 			for (int col = 0; col < image.cols(); col++) {
 				double[] pixel = image.get(row, col);
-				double grayValue = 0.299 * pixel[2] + 0.587 * pixel[1] + 0.114 * pixel[0];
+				int grayValue = (int) (0.299 * pixel[2] + 0.587 * pixel[1] + 0.114 * pixel[0]);
 				gray.put(row, col, grayValue);
 			}
 		}
@@ -67,8 +67,8 @@ public class Principal {
 		List<Double> PSNRdSauvola = new ArrayList<>();
 		List<Double> jaccardNiblack = new ArrayList<>();
 		List<Double> jaccardSauvola = new ArrayList<>();
-		List<Double> UmbralSauvola = new ArrayList<>();
-		List<Double> UmbralNiblack = new ArrayList<>();
+		List<Integer> UmbralSauvola = new ArrayList<>();
+		List<Integer> UmbralNiblack = new ArrayList<>();
 
 		// ---------------------------------------------------------------------------------------------------------
 
@@ -113,7 +113,7 @@ public class Principal {
 					/////
 					/////
 					/// FORMULA NIBLACK
-					double thresholdValue = mean + (kniblack * stdDev);
+					int thresholdValue = (int) (mean + (kniblack * stdDev));
 					double pixelValue = gray.get(row, col)[0];
 					if (pixelValue > thresholdValue) {
 						thresholdNiblack.put(row, col, 255);
@@ -122,9 +122,9 @@ public class Principal {
 					}
 				}
 			}
-			System.out.println("K=" + kniblack + "\nUmbral de Niblack: " + Core.mean(thresholdNiblack).val[0]);
+			System.out.println("K=" + kniblack + "\nUmbral de Niblack: " + (int) Core.mean(thresholdNiblack).val[0]);
 
-			UmbralNiblack.add(Core.mean(thresholdNiblack).val[0]);
+			UmbralNiblack.add((int) Core.mean(thresholdNiblack).val[0]);
 
 			// Calcular el MSE (error cuadrático medio)
 			/*
@@ -207,7 +207,7 @@ public class Principal {
 					//// FORMULA SAUVOLA
 					// double thresholdValue = mean * (1 + k * (Math.sqrt(variance / 128) - 1));
 					double desv = Math.sqrt(variance);
-					double thresholdValue = mean * (1 - ksauvola * (1 - (desv / 128)));
+					int thresholdValue = (int) (mean * (1 - ksauvola * (1 - (desv / 128))));
 					if (pixel[0] > thresholdValue) {
 						sauvola.put(row, col, 255);
 					} else {
@@ -215,9 +215,9 @@ public class Principal {
 					}
 				}
 			}
-			System.out.println("K=" + ksauvola + "\nUmbral de Sauvola: " + Core.mean(sauvola).val[0]);
+			System.out.println("K=" + ksauvola + "\nUmbral de Sauvola: " + (int) Core.mean(sauvola).val[0]);
 
-			UmbralSauvola.add(Core.mean(sauvola).val[0]);
+			UmbralSauvola.add((int) Core.mean(sauvola).val[0]);
 
 			double mse = 0;
 			// Calcular el MSE
@@ -273,7 +273,6 @@ public class Principal {
 		List<String> HISTNI = new ArrayList<>();
 
 		for (int w = 0; w < 10; w++) {
-			// Calcular el Coeficiente de Jaccard para comparar las imágenes resultantes
 			int[] histogramSauvola = new int[256];
 			for (int i = 0; i < imageSauvola.get(w).rows(); i++) {
 				for (int j = 0; j < imageSauvola.get(w).cols(); j++) {
@@ -297,6 +296,15 @@ public class Principal {
 			HISTSA.add(valores);
 		}
 
+		// Histograma imagen en grises
+		int[] histogramGray = new int[256];
+		for (int i = 0; i < gray.rows(); i++) {
+			for (int j = 0; j < gray.cols(); j++) {
+				int value = (int) gray.get(i, j)[0];
+				histogramGray[value]++;
+			}
+		}
+
 		// Conjunto de resultados
 		try {
 			FileWriter writer = new FileWriter(rutaCarpetaDestino + "/Histograma_Jaccard_PSNR.csv");
@@ -304,18 +312,35 @@ public class Principal {
 
 			double contadorK = 0.0;
 			for (int w = 0; w < 10; w++) {
-
 				contadorK += 0.1;
 
 				writer.write("\n");
 				writer.write(HISTNI.get(w) + "," + jaccardSauvola.get(w) + "," + PSNRdSauvola.get(w) + ","
 						+ UmbralSauvola.get(w) + "," + contadorK + ",Sauvola");
+			}
+
+			writer.write("\n");
+
+			contadorK = 0.0;
+			for (int w = 0; w < 10; w++) {
+				contadorK += 0.1;
+
 				writer.write("\n");
 				writer.write(HISTSA.get(w) + "," + jaccardNiblack.get(w) + "," + PSNRNiblack.get(w) + ","
 						+ UmbralNiblack.get(w) + "," + contadorK + ",Niblack");
+			}
+			writer.write("\n");
+			writer.write("\n");
+			for (int w = 0; w < 256; w++) {
+				writer.write(w + ",");
 
 			}
+			writer.write("\n");
+			for (int w = 0; w < 256; w++) {
+				writer.write(String.valueOf(histogramGray[w]) + ",");
+			}
 
+			writer.write("ImagenEnGrises");
 			writer.close();
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -344,7 +369,7 @@ public class Principal {
 		for (int w = 0; w < 10; w++) {
 			// Guardar matriz de imagen Sauvola
 			try {
-				FileWriter writer = new FileWriter(rutaCarpetaDestino + "/matrizImagenSauola" + w + ".csv");
+				FileWriter writer = new FileWriter(rutaCarpetaDestino + "/matrizImagenSauvola" + w + ".csv");
 
 				for (int i = 0; i < imageSauvola.get(w).rows(); i++) {
 					for (int j = 0; j < imageSauvola.get(w).cols(); j++) {
