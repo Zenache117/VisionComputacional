@@ -17,7 +17,7 @@ Se abre un diÃ¡logo para que el usuario seleccione una imagen a procesar.
 
 La biblioteca OpenCV se carga en el programa.
 
-La imagen seleccionada se lee y se almacena en una matriz.
+La imagen seleccionada se lee y se almacena en una matriz. 
 
 A continuaciÃ³n, el programa convierte la imagen a escala de grises. 
 Esto se logra creando una nueva Mat de tipo CV_8U con las mismas dimensiones que la imagen original y, a travÃ©s de un bucle anidado que recorre cada pÃ­xel 
@@ -126,10 +126,10 @@ public class Principal {
 
 			UmbralNiblack.add((int) Core.mean(thresholdNiblack).val[0]);
 
-			// Calcular el MSE (error cuadrático medio)
+			// Calcular el MSE (error cuadrï¿½tico medio)
 			/*
 			 * El MSE se calcula como el promedio de los cuadrados de las diferencias entre
-			 * los valores de píxeles correspondientes de las dos imágenes.
+			 * los valores de pï¿½xeles correspondientes de las dos imï¿½genes.
 			 */
 			double mse = 0;
 			for (int i = 0; i < gray.rows(); i++) {
@@ -143,20 +143,20 @@ public class Principal {
 			mse /= gray.rows() * gray.cols();
 
 			/*
-			 * PSNR (Relación Señal-Ruido de Pico, por sus siglas en inglés) es una medida
-			 * de la calidad de la reconstrucción de imágenes que han sido comprimidas. Se
+			 * PSNR (Relaciï¿½n Seï¿½al-Ruido de Pico, por sus siglas en inglï¿½s) es una medida
+			 * de la calidad de la reconstrucciï¿½n de imï¿½genes que han sido comprimidas. Se
 			 * calcula comparando la imagen original con la imagen reconstruida y se mide la
-			 * cantidad de ruido introducido durante el proceso de compresión. Un valor más
+			 * cantidad de ruido introducido durante el proceso de compresiï¿½n. Un valor mï¿½s
 			 * alto de PSNR indica una mejor calidad de la imagen reconstruida.
 			 * 
-			 * PSNR se calcula utilizando el error cuadrático medio (MSE, por sus siglas en
-			 * inglés) entre la imagen original y la imagen reconstruida. Una vez que se ha
-			 * calculado el MSE, se puede calcular el PSNR (en dB) utilizando la fórmula:
-			 * PSNR = 20 * log10(MAX / sqrt(MSE)), donde MAX es el valor máximo posible del
-			 * píxel en la imagen (255) y sqrt(MSE) es la raíz cuadrada del MSE 1.
+			 * PSNR se calcula utilizando el error cuadrï¿½tico medio (MSE, por sus siglas en
+			 * inglï¿½s) entre la imagen original y la imagen reconstruida. Una vez que se ha
+			 * calculado el MSE, se puede calcular el PSNR (en dB) utilizando la fï¿½rmula:
+			 * PSNR = 20 * log10(MAX / sqrt(MSE)), donde MAX es el valor mï¿½ximo posible del
+			 * pï¿½xel en la imagen (255) y sqrt(MSE) es la raï¿½z cuadrada del MSE 1.
 			 */
 
-			// Calcular el PSNR - (Entre mas alto es este valor mejor fue la reconstrucción
+			// Calcular el PSNR - (Entre mas alto es este valor mejor fue la reconstrucciï¿½n
 			// de la imagen)
 			double psnr_Niblack = 20 * Math.log10(255.0 / Math.sqrt(mse));
 
@@ -411,10 +411,10 @@ public class Principal {
 	}
 
 	// Calculo de similitud mediante jaccard (el maximo valor de similitud es 1 y el
-	// minimo es 0) la relación de jaccard sse basa en revisar la cantidad total de
+	// minimo es 0) la relaciï¿½n de jaccard sse basa en revisar la cantidad total de
 	// pixeles de un tipo y ver cuales de esos pixeles se intersectan entre si, una
 	// vez se obtienen esos valores, se dividen las intersecciones entre los pixeles
-	// encontrados y ese ess su nivel de relación
+	// encontrados y ese ess su nivel de relaciï¿½n
 	public static double jaccard(Mat img1, Mat img2) {
 		int intersection = 0;
 		int union = 0;
