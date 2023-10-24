@@ -308,7 +308,7 @@ public class Principal {
 		// Conjunto de resultados
 		try {
 			FileWriter writer = new FileWriter(rutaCarpetaDestino + "/Histograma_Jaccard_PSNR.csv");
-			writer.write("0,255,Jaccard,PSNR,Umbral,K");
+			writer.write("Pixeles valor 0,Pixeles valor 255,Jaccard,PSNR,Umbral,K");
 
 			double contadorK = 0.0;
 			for (int w = 0; w < 10; w++) {
